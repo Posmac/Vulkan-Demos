@@ -7,5 +7,7 @@ int main()
     app.getAvailableInstanceExtensions();
     app.createInstance();
     app.createDebugMesenger();
+    app.pickUpPhysicalDevice();
+    app.createLogicalDevice();
     app.clean();
 }

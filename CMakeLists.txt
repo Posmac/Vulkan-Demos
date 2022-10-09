@@ -11,7 +11,9 @@ add_executable(VulkanBook
         external/tiny_obj_loader.h 
         src/Vulkan.h
         src/Vulkan.cpp
-        src/Core/Core.h)
+        src/Core/Core.h
+        src/QueueInfo.h
+        src/QueueInfo.cpp)
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")

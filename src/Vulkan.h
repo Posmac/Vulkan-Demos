@@ -1,3 +1,6 @@
+#ifndef VULKAN
+#define VULKAN
+
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -5,6 +8,7 @@
 
 #include "Core/Core.h"
 #include "vulkan/vulkan.h"
+#include "QueueInfo.h"
 
 namespace Vulkan
 {
@@ -31,12 +35,19 @@ namespace Vulkan
 			VkDebugUtilsMessengerEXT debugMessenger, 
 			const VkAllocationCallbacks* pAllocator);
 
+		//pickup physical device
+		void pickUpPhysicalDevice();
+		bool isDeviceIsSuitable(VkPhysicalDevice device);
+
+		//create logical device
+		void createLogicalDevice();
+
 		//cleaning
 		void clean();
 
 	private:
 		//return vector of string for layers and extensions
-		void getLayerNames(const std::vector<VkLayerProperties> &originalList,
+		void checkInstanceLayersSupport(const std::vector<VkLayerProperties> &originalList,
 									std::vector<const char*> &returnList);
 		void getExtensionNames(const std::vector<VkExtensionProperties> &originalList,
         								std::vector<const char*> &returnList);
@@ -47,10 +58,8 @@ namespace Vulkan
 			"VK_LAYER_KHRONOS_validation",
 		};
 
-		const std::vector<const char*> usedDeviceExtensions = {
+		const std::vector<const char*> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-			"VK_EXT_debug_report",
-			"VK_EXT_debug_utils",
 		};
 
 		//checking available layers
@@ -70,6 +79,16 @@ namespace Vulkan
 		//storing instance object
 		VkInstance instance;
 
+		//storing physical device and all necessar data
+		VkPhysicalDevice physicalDevice;
+		QueueInfo info;
+
+		//queues
+		VkQueue graphicsQueue;
+
+		//create logical device
+		VkDevice device;
+
 	private://STATICS
 		//function for creation of VkDebugUtilsMessengerEXT object
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugMesengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -77,11 +96,17 @@ namespace Vulkan
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData)
 		{
-			LOG_INFO("VALIDATION LAYER");
-			LOG_INFO(pCallbackData->pMessage);
-			LOG_INFO('\n');
+			if (messageSeverity >=
+				VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+			{
+				LOG_INFO("VALIDATION LAYER");
+				LOG_INFO(pCallbackData->pMessage);
+				LOG_INFO('\n');
+			}
 
 			return VK_FALSE;
 		}
 	};
 }
+
+#endif

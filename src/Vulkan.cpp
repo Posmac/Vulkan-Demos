@@ -120,8 +120,17 @@ namespace Vulkan
             auto debugInfo = getDebugUtilsMessengerInfo();
             createInfo.pNext = &debugInfo;
 
-            std::vector<const char*> layers;
-            checkInstanceLayersSupport(availableLayers, layers);
+            for(const char* layerName : usedValidationLayers)
+            {
+                for (const auto& layerProperties : availableLayers) 
+                {
+                    if (strcmp(layerName, layerProperties.layerName) == 0) 
+                    {
+                        LOG_INFO("\nLayer " + std::string(layerName) + " is supported\n");
+                        break;
+                    }
+                }
+            }
 
             createInfo.enabledLayerCount = static_cast<uint32_t>(usedValidationLayers.size());
             createInfo.ppEnabledLayerNames = usedValidationLayers.data();
@@ -133,11 +142,16 @@ namespace Vulkan
             createInfo.ppEnabledLayerNames = nullptr;
         }
 
-        std::vector<const char*> exts;
-        getExtensionNames(availableInstanceExtensions, exts);
+        std::vector<const char*> extNames;
+        extNames.reserve(availableInstanceExtensionsCount);
 
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(exts.size());
-        createInfo.ppEnabledExtensionNames = exts.data();
+        for(const auto& ext : availableInstanceExtensions)
+        {
+            extNames.push_back(ext.extensionName);
+        }
+
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(extNames.size());
+        createInfo.ppEnabledExtensionNames = extNames.data();
 
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         if(result != VK_SUCCESS)
@@ -145,24 +159,6 @@ namespace Vulkan
             LOG_INFO("Failed to create instance");
         }
     }
-
-    void VulkanApplication::checkInstanceLayersSupport(const std::vector<VkLayerProperties> &originalList,
-        									std::vector<const char*> &returnList)
-	{
-		for(const auto& ext : originalList)
-        {
-            returnList.push_back(ext.layerName);
-        }
-	}
-
-    void VulkanApplication::getExtensionNames(const std::vector<VkExtensionProperties> &originalList,
-        std::vector<const char*> &returnList)
-	{
-		for(const auto& ext : originalList)
-        {
-            returnList.push_back(ext.extensionName);
-        }
-	}
 
     void VulkanApplication::pickUpPhysicalDevice()
     {
@@ -233,10 +229,16 @@ namespace Vulkan
         deviceExt.resize(availableDeviceExtensions);
         vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &availableDeviceExtensions, deviceExt.data());
 
-        std::vector<const char*> exts;
-        for (const auto& ext : deviceExt)
+        for(const char* extName : usedDeviceExtensions)
         {
-            exts.push_back(ext.extensionName);
+            for (const auto& ext : deviceExt) 
+            {
+                if (strcmp(extName, ext.extensionName) == 0) 
+                {
+                    LOG_INFO("\nLayer " + std::string(extName) + " is supported\n");
+                    break;
+                }
+            }
         }
 
         VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -258,8 +260,8 @@ namespace Vulkan
         VkPhysicalDeviceFeatures features{};
         createInfo.pEnabledFeatures = &features;
 
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(usedDeviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = usedDeviceExtensions.data();
 
         if(debugModeEnabled)
         {

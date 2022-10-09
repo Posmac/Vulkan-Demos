@@ -5,11 +5,11 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <algorithm>
 
 #include "Core/Core.h"
 #include "vulkan/vulkan.h"
 #include "QueueInfo.h"
-
 namespace Vulkan
 {
 	class VulkanApplication
@@ -45,12 +45,12 @@ namespace Vulkan
 		//cleaning
 		void clean();
 
-	private:
-		//return vector of string for layers and extensions
-		void checkInstanceLayersSupport(const std::vector<VkLayerProperties> &originalList,
-									std::vector<const char*> &returnList);
-		void getExtensionNames(const std::vector<VkExtensionProperties> &originalList,
-        								std::vector<const char*> &returnList);
+	// private:
+	// 	//return vector of string for layers and extensions
+	// 	void checkInstanceLayersSupport(const std::vector<VkLayerProperties> &originalList,
+	// 								std::vector<const char*> &returnList);
+	// 	void getExtensionNames(const std::vector<VkExtensionProperties> &originalList,
+    //     								std::vector<const char*> &returnList);
 
 	private:
 		//specifying the list of needed layers and DEVICE extensions
@@ -58,8 +58,8 @@ namespace Vulkan
 			"VK_LAYER_KHRONOS_validation",
 		};
 
-		const std::vector<const char*> deviceExtensions = {
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		const std::vector<const char*> usedDeviceExtensions = {
+			"VK_KHR_swapchain",
 		};
 
 		//checking available layers

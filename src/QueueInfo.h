@@ -4,13 +4,14 @@
 #include <vector>
 #include <optional>
 
-struct QueueInfo
+struct QueuesInfo
 {
     std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> computeFamily;
 
     bool isComplete()
     {
-        return graphicsFamily.has_value();
+        return graphicsFamily.has_value() && computeFamily.has_value();
     }
 };
 

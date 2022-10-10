@@ -6,6 +6,7 @@
 #include <string>
 #include <set>
 #include <algorithm>
+#include <array>
 
 #include "Core/Core.h"
 #include "vulkan/vulkan.h"
@@ -45,13 +46,6 @@ namespace Vulkan
 		//cleaning
 		void clean();
 
-	// private:
-	// 	//return vector of string for layers and extensions
-	// 	void checkInstanceLayersSupport(const std::vector<VkLayerProperties> &originalList,
-	// 								std::vector<const char*> &returnList);
-	// 	void getExtensionNames(const std::vector<VkExtensionProperties> &originalList,
-    //     								std::vector<const char*> &returnList);
-
 	private:
 		//specifying the list of needed layers and DEVICE extensions
 		const std::vector<const char*> usedValidationLayers = {
@@ -81,10 +75,12 @@ namespace Vulkan
 
 		//storing physical device and all necessar data
 		VkPhysicalDevice physicalDevice;
-		QueueInfo info;
 
 		//queues
+		QueuesInfo info;
+		bool computeQueueIndexEqualToGraphicsQueueIndex;
 		VkQueue graphicsQueue;
+		VkQueue computeQueue;
 
 		//create logical device
 		VkDevice device;

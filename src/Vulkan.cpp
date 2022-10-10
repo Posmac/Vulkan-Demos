@@ -187,17 +187,11 @@ namespace Vulkan
 
     bool VulkanApplication::isDeviceIsSuitable(VkPhysicalDevice device)
     {
-        uint32_t availableDeviceExtensions;
-		std::vector<VkExtensionProperties> deviceExt;
 		VkPhysicalDeviceFeatures features;
         VkPhysicalDeviceProperties props;
+
 		uint32_t queueFamilies;
 		std::vector<VkQueueFamilyProperties> familyProps;
-
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &availableDeviceExtensions, nullptr);
-
-        deviceExt.resize(availableDeviceExtensions);
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &availableDeviceExtensions, deviceExt.data());
 
         vkGetPhysicalDeviceFeatures(device, &features);
         vkGetPhysicalDeviceProperties(device, &props);
@@ -206,15 +200,39 @@ namespace Vulkan
         familyProps.resize(queueFamilies);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilies, familyProps.data());
 
-        VkQueueFlagBits flags = VK_QUEUE_GRAPHICS_BIT;
+        uint32_t graphicsFamily;
+        uint32_t computeFamily;
+
+        info = {};
+
+        computeQueueIndexEqualToGraphicsQueueIndex = false;
+
         for(int i = 0; i < queueFamilies; i++)
         {
-            if(familyProps[i].queueCount > 0 && (familyProps[i].queueFlags & flags))
+            if(familyProps[i].queueCount > 0 && features.geometryShader)
             {
-                info.graphicsFamily = i;
-                return true;
+                if( (familyProps[i].queueFlags & VK_QUEUE_COMPUTE_BIT))
+                {
+                    info.computeFamily = i;
+                }
+
+                if((familyProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
+                {
+                    info.graphicsFamily = i;
+                }
+
+                if(info.isComplete())
+                {
+                    if(info.graphicsFamily.value() == info.computeFamily.value())
+                    {
+                        computeQueueIndexEqualToGraphicsQueueIndex = true;
+                    }
+                    return true;
+                }
             }
         }
+
+        LOG_INFO("Cannot find suitable physical device");
 
         return false;
     }
@@ -241,21 +259,36 @@ namespace Vulkan
             }
         }
 
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.pNext = nullptr;
-        queueCreateInfo.flags = 0;
+
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {};
+        const int size = computeQueueIndexEqualToGraphicsQueueIndex ? 1 : 2;
+        queueCreateInfos.resize(size);
 
         float queuePriority = 1.0f;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
-        queueCreateInfo.queueFamilyIndex = info.graphicsFamily.value();
-        queueCreateInfo.queueCount = 1;
+
+        queueCreateInfos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfos[0].pNext = nullptr;
+        queueCreateInfos[0].flags = 0;
+
+        queueCreateInfos[0].pQueuePriorities = &queuePriority;
+        queueCreateInfos[0].queueFamilyIndex = info.graphicsFamily.value();
+        queueCreateInfos[0].queueCount = 1;
+
+        if(!computeQueueIndexEqualToGraphicsQueueIndex)
+        {
+            queueCreateInfos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfos[1].pNext = nullptr;
+            queueCreateInfos[1].flags = 0;
+            queueCreateInfos[1].pQueuePriorities = &queuePriority;
+            queueCreateInfos[1].queueFamilyIndex = info.computeFamily.value();
+            queueCreateInfos[1].queueCount = 1;
+        }
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.pNext = nullptr;
-        createInfo.queueCreateInfoCount = 1;
-        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
         VkPhysicalDeviceFeatures features{};
         createInfo.pEnabledFeatures = &features;
@@ -280,5 +313,12 @@ namespace Vulkan
         }
 
         vkGetDeviceQueue(device, info.graphicsFamily.value(), 0, &graphicsQueue);
+        if(!computeQueueIndexEqualToGraphicsQueueIndex)
+        {
+            vkGetDeviceQueue(device, info.computeFamily.value(), 0, &computeQueue);
+        }
+        LOG_INFO("Queue families used indexes:");
+        LOG_INFO("Graphics family queue index " + std::to_string(info.graphicsFamily.value()));
+        LOG_INFO("Compute family queue index " + std::to_string(info.computeFamily.value()));
     }
 }

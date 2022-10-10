@@ -94,9 +94,20 @@ namespace Vulkan
 
     void VulkanApplication::clean()
     {
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-        vkDestroyDevice(device, nullptr);
-        vkDestroyInstance(instance, nullptr);
+        if(device != VK_NULL_HANDLE)
+        {
+            vkDestroyDevice(device, nullptr);
+        }
+
+        if(debugMessenger != VK_NULL_HANDLE)
+        {
+            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        }
+
+        if(instance != VK_NULL_HANDLE)
+        {
+            vkDestroyInstance(instance, nullptr);
+        }
     }
 
     void VulkanApplication::createInstance()

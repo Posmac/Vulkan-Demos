@@ -137,8 +137,7 @@ namespace Vulkan
                 {
                     if (strcmp(layerName, layerProperties.layerName) == 0) 
                     {
-                        LOG_INFO("\nLayer " + std::string(layerName) + " is supported\n");
-                        break;
+                        LOG_INFO("Instance layer " + std::string(layerName) + " is supported");
                     }
                 }
             }
@@ -153,16 +152,19 @@ namespace Vulkan
             createInfo.ppEnabledLayerNames = nullptr;
         }
 
-        std::vector<const char*> extNames;
-        extNames.reserve(availableInstanceExtensionsCount);
-
-        for(const auto& ext : availableInstanceExtensions)
+        for(const char* layerName : usedInstanceExtensions)
         {
-            extNames.push_back(ext.extensionName);
+            for (const auto& layerProperties : usedInstanceExtensions) 
+            {
+                if (strcmp(layerName, layerProperties) == 0) 
+                {
+                    LOG_INFO("Instance extension " + std::string(layerName) + " is supported");
+                }
+            }
         }
 
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extNames.size());
-        createInfo.ppEnabledExtensionNames = extNames.data();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(usedInstanceExtensions.size());
+        createInfo.ppEnabledExtensionNames = usedInstanceExtensions.data();
 
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         if(result != VK_SUCCESS)
@@ -264,12 +266,10 @@ namespace Vulkan
             {
                 if (strcmp(extName, ext.extensionName) == 0) 
                 {
-                    LOG_INFO("\nLayer " + std::string(extName) + " is supported\n");
-                    break;
+                    LOG_INFO("Device extension " + std::string(extName) + " is supported");
                 }
             }
         }
-
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {};
         const int size = computeQueueIndexEqualToGraphicsQueueIndex ? 1 : 2;

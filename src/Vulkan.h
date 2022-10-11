@@ -11,6 +11,7 @@
 #include "Core/Core.h"
 #include "vulkan/vulkan.h"
 #include "QueueInfo.h"
+
 namespace Vulkan
 {
 	class VulkanApplication
@@ -47,9 +48,17 @@ namespace Vulkan
 		void clean();
 
 	private:
-		//specifying the list of needed layers and DEVICE extensions
+		//specifying the list of needed layers and extensions(for instance and device creation)
 		const std::vector<const char*> usedValidationLayers = {
 			"VK_LAYER_KHRONOS_validation",
+		};
+
+		const std::vector<const char*> usedInstanceExtensions = 
+		{
+			"VK_KHR_surface",
+			"VK_KHR_win32_surface",
+			"VK_EXT_debug_report",
+			"VK_EXT_debug_utils"
 		};
 
 		const std::vector<const char*> usedDeviceExtensions = {
@@ -95,9 +104,7 @@ namespace Vulkan
 			if (messageSeverity >=
 				VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 			{
-				LOG_INFO("VALIDATION LAYER");
-				LOG_INFO(pCallbackData->pMessage);
-				LOG_INFO('\n');
+				LOG_INFO(" VALIDATION LAYER" + std::string(pCallbackData->pMessage));
 			}
 
 			return VK_FALSE;

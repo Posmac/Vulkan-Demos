@@ -11,6 +11,7 @@
 #include "Core/Core.h"
 #include "vulkan/vulkan.h"
 #include "QueueInfo.h"
+#include "Platform/Window.h"
 
 namespace Vulkan
 {
@@ -43,6 +44,57 @@ namespace Vulkan
 
 		//create logical device
 		void createLogicalDevice();
+///////////////////////////////////////////////////////////////////////////
+
+		void createSurface();
+
+    	enum UserMessage {
+    	  USER_MESSAGE_RESIZE = WM_USER + 1,
+    	  USER_MESSAGE_QUIT,
+    	  USER_MESSAGE_MOUSE_CLICK,
+    	  USER_MESSAGE_MOUSE_MOVE,
+    	  USER_MESSAGE_MOUSE_WHEEL
+    	};
+
+ 		static LRESULT CALLBACK WindowProcedure( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
+		{
+			switch( message ) 
+			{
+    			case WM_LBUTTONDOWN:
+    			  PostMessage( hWnd, USER_MESSAGE_MOUSE_CLICK, 0, 1 );
+    			  break;
+    			case WM_LBUTTONUP:
+    			  PostMessage( hWnd, USER_MESSAGE_MOUSE_CLICK, 0, 0 );
+    			  break;
+    			case WM_RBUTTONDOWN:
+    			  PostMessage( hWnd, USER_MESSAGE_MOUSE_CLICK, 1, 1 );
+    			  break;
+    			case WM_RBUTTONUP:
+    			  PostMessage( hWnd, USER_MESSAGE_MOUSE_CLICK, 1, 0 );
+    			  break;
+    			case WM_MOUSEMOVE:
+    			  PostMessage( hWnd, USER_MESSAGE_MOUSE_MOVE, LOWORD( lParam ), HIWORD( lParam ) );
+    			  break;
+    			case WM_MOUSEWHEEL:
+    			  PostMessage( hWnd, USER_MESSAGE_MOUSE_WHEEL, HIWORD( wParam ), 0 );
+    			  break;
+    			case WM_SIZE:
+    			case WM_EXITSIZEMOVE:
+    			  PostMessage( hWnd, USER_MESSAGE_RESIZE, wParam, lParam );
+    			  break;
+    			case WM_KEYDOWN:
+    			  if( VK_ESCAPE == wParam ) {
+    			    PostMessage( hWnd, USER_MESSAGE_QUIT, wParam, lParam );
+    			  }
+    			  break;
+    			case WM_CLOSE:
+    			  PostMessage( hWnd, USER_MESSAGE_QUIT, wParam, lParam );
+    			  break;
+    			default:
+    			  return DefWindowProc( hWnd, message, wParam, lParam );
+    		}
+    		return 0;
+		}
 
 		//cleaning
 		void clean();
@@ -93,6 +145,11 @@ namespace Vulkan
 
 		//create logical device
 		VkDevice device;
+
+///////////////////////////////////////////////////////////////////
+		
+		//surface
+		VkSurfaceKHR surface;
 
 	private://STATICS
 		//function for creation of VkDebugUtilsMessengerEXT object

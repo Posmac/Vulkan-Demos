@@ -94,6 +94,11 @@ namespace Vulkan
 
     void VulkanApplication::clean()
     {
+        if (surface != VK_NULL_HANDLE)
+        {
+            vkDestroySurfaceKHR(instance, surface, nullptr);
+        }
+
         if(device != VK_NULL_HANDLE)
         {
             vkDestroyDevice(device, nullptr);
@@ -331,5 +336,85 @@ namespace Vulkan
         LOG_INFO("Queue families used indexes:");
         LOG_INFO("Graphics family queue index " + std::to_string(info.graphicsFamily.value()));
         LOG_INFO("Compute family queue index " + std::to_string(info.computeFamily.value()));
+    }
+
+    void VulkanApplication::createSurface()
+    {
+        WindowParametes params {};
+        params.hInstance = GetModuleHandle(NULL);
+
+        auto size = sizeof(WNDCLASSEX);
+        const char* className = "Vulkan Demo";
+
+        WNDCLASSEX wndClass {};
+        wndClass.cbSize = size;
+        wndClass.style = CS_HREDRAW | CS_VREDRAW;
+        wndClass.cbClsExtra = 0;
+        wndClass.cbWndExtra = 0;
+        wndClass.hInstance = params.hInstance;
+        wndClass.hIcon = NULL;
+        wndClass.hCursor = LoadCursor(0, IDC_ARROW);
+        wndClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
+        wndClass.lpszMenuName = "Menu";
+        wndClass.lpszClassName = className;
+        wndClass.hIcon = LoadIcon(0, IDI_WINLOGO);
+        wndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+        wndClass.lpfnWndProc = WindowProcedure;
+
+        if(!RegisterClassEx(&wndClass))
+        {
+            LOG_INFO("Failed to register class");
+        }
+
+        params.hWnd = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, "Vulkan", WS_OVERLAPPEDWINDOW,
+            CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, params.hInstance, NULL);
+
+        /*DWORD dw = GetLastError();
+
+        LPVOID lpMsgBuf;
+        LPVOID lpDisplayBuf;
+
+        FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            dw,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPTSTR)&lpMsgBuf,
+            0, NULL);
+
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+            (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)0) + 40) * sizeof(TCHAR));
+
+        StringCchPrintf((LPTSTR)lpDisplayBuf,
+            LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+            TEXT("%s failed with error %d: %s"),
+            0, dw, lpMsgBuf);
+
+        MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+        LocalFree(lpMsgBuf);
+        LocalFree(lpDisplayBuf);
+        ExitProcess(dw);*/
+
+        if (params.hWnd == nullptr)
+        {
+            LOG_INFO("Failed to create window handle");
+        }
+
+        VkWin32SurfaceCreateInfoKHR surfaceInfo{};
+        surfaceInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+        surfaceInfo.pNext = nullptr;
+        surfaceInfo.hinstance = params.hInstance;
+        surfaceInfo.hwnd = params.hWnd;
+        surfaceInfo.flags = 0;
+
+        VkResult result = vkCreateWin32SurfaceKHR(instance, &surfaceInfo, nullptr, &surface);
+
+        if(result != VK_SUCCESS)
+        {
+            LOG_INFO("Failed to create Win32 surface");
+        }
     }
 }

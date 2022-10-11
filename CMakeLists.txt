@@ -13,7 +13,8 @@ add_executable(VulkanBook
         src/Vulkan.cpp
         src/Core/Core.h
         src/QueueInfo.h
-        src/QueueInfo.cpp)
+        src/QueueInfo.cpp
+        src/Platform/Window.h)
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")

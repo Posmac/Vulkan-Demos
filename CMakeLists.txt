@@ -5,16 +5,33 @@ set(CMAKE_CXX_STANDARD 17)
 set(GLFW_VULKAN_STATIC, "True")
 set(PROJECT_NAME VulkanBook)
 
+include_directories(src)
+include_directories(src/Core)
+include_directories(src/vk)
+include_directories(src/Platform)
+include_directories(src/Common)
+
 add_executable(VulkanBook
-        src/main.cpp
-        external/stb_image.h 
-        external/tiny_obj_loader.h 
-        src/Vulkan.h
-        src/Vulkan.cpp
+        src/App.cpp
         src/Core/Core.h
-        src/QueueInfo.h
-        src/QueueInfo.cpp
-        src/Platform/Window.h)
+        src/Common/QueueInfo.h
+        src/Platform/Win32Window.cpp
+        src/Platform/Win32Window.h
+        src/vk/vkApp.cpp
+        src/vk/vkApp.h
+        src/vk/vkDebugMesenger.cpp
+        src/vk/vkDebugMesenger.h
+        src/vk/vkInstance.cpp
+        src/vk/vkInstance.h
+        src/vk/vkPhysicalDevice.cpp
+        src/vk/vkPhysicalDevice.h
+        src/vk/vkLogicalDevice.cpp
+        src/vk/vkLogicalDevice.h
+        src/vk/vkSwapchain.cpp
+        src/vk/vkSwapchain.h
+
+        external/stb_image.h 
+        external/tiny_obj_loader.h)
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")

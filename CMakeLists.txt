@@ -28,6 +28,10 @@ add_executable(VulkanBook
         src/vk/vkLogicalDevice.h
         src/vk/vkSwapchain.cpp
         src/vk/vkSwapchain.h
+        src/vk/vkCommandPool.cpp
+        src/vk/vkCommandPool.h
+        src/vk/vkCommandBuffer.cpp
+        src/vk/vkCommandBuffer.h
 
         external/stb_image.h 
         external/tiny_obj_loader.h)

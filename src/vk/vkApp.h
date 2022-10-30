@@ -156,7 +156,7 @@ namespace vk
 			return image;
 		}
 
-		void AllocateImageMemory(VkPhysicalDevice gpu, VkDevice device, VkImage image, VkMemoryPropertyFlagBits flags)
+		VkDeviceMemory AllocateImageMemory(VkPhysicalDevice gpu, VkDevice device, VkImage image, VkMemoryPropertyFlagBits flags)
 		{
 			//for performance store physical device memory props after selecting suitable one
 			VkPhysicalDeviceMemoryProperties gpuMemProps{};
@@ -183,6 +183,7 @@ namespace vk
 			}
 
 			VK_CHECK_RESULT(vkBindImageMemory(device, image, deviceMem, 0));
+			return deviceMem;
 		}
 
 		struct ImageTransition
@@ -271,6 +272,12 @@ namespace vk
 			VK_CHECK_RESULT(vkCreateImageView(device, &info, nullptr, &view));
 			return view;
 		}
+
+		struct Buffer
+		{
+			VkBuffer buffer;
+			VkBufferView bufferView;
+		};
 
 		VkBuffer CreateBuffer(const VkDevice& device, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkSharingMode sharingMode)
 		{
@@ -577,6 +584,428 @@ namespace vk
 		{
 			//use it after all resource objects was destroyed
 			vkFreeMemory(device, obj, nullptr);
+		}
+
+		//descriptor sets
+		VkSampler CreateSampler(VkDevice device, VkFilter minFilterMode, VkFilter magFilterMode,
+			VkSamplerMipmapMode samplerMipMapMode, VkSamplerAddressMode uAdressMode, VkSamplerAddressMode vAdressMode,
+			VkSamplerAddressMode wAdressMode, float mipLodBias, bool enableAniso, float maxAniso,
+			bool enableReferenceCompare, VkCompareOp compareOp, float minLod, float maxLod,
+			VkBorderColor borderColor, bool normalizeCoordinates)
+		{
+			VkSamplerCreateInfo samplerCI{};
+			samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			samplerCI.pNext = nullptr;
+			samplerCI.flags = 0;
+			samplerCI.minFilter = minFilterMode;
+			samplerCI.magFilter = magFilterMode;
+			samplerCI.mipmapMode = samplerMipMapMode;
+			samplerCI.addressModeU = uAdressMode;
+			samplerCI.addressModeV = vAdressMode;
+			samplerCI.addressModeW = wAdressMode;
+			samplerCI.mipLodBias = mipLodBias;
+			samplerCI.anisotropyEnable = enableAniso;
+			samplerCI.maxAnisotropy = maxAniso;
+			samplerCI.compareEnable = enableReferenceCompare;
+			samplerCI.compareOp = compareOp;
+			samplerCI.minLod = minLod;
+			samplerCI.maxLod = maxLod;
+			samplerCI.borderColor = borderColor;
+			samplerCI.unnormalizedCoordinates = normalizeCoordinates;
+
+			VkSampler sampler;
+			VK_CHECK_RESULT(vkCreateSampler(device, &samplerCI, nullptr, &sampler));
+			return sampler;
+		}
+
+		Image CreateSampledImage(VkDevice device, VkPhysicalDevice gpu, VkFormat imageFormat, 
+			VkFormatFeatureFlags desiredFeature, VkImageType imageType, VkExtent3D imageSize,
+			uint32_t imageLayers, uint32_t mipmapLevels, VkSampleCountFlagBits samplesCount,
+			VkImageViewType viewType, VkImageAspectFlags aspectFlags)
+		{
+			VkFormatProperties formatProps{};
+			vkGetPhysicalDeviceFormatProperties(gpu, imageFormat, &formatProps);
+
+			if (!(formatProps.optimalTilingFeatures & desiredFeature))
+			{
+				LOG_INFO("Type desiredFeature isnt supported");
+			}
+
+			VkImage image = CreateImage(device, imageType, imageFormat, imageSize,
+				imageLayers, mipmapLevels, samplesCount, VK_IMAGE_USAGE_SAMPLED_BIT);
+			VkDeviceMemory imageMemoryObject = AllocateImageMemory(gpu, device, image,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VkImageView view = CreateImageView(device, image, viewType, imageFormat, aspectFlags);
+			return { image, view };
+		}
+
+		Image CreateCombinedImageSampler()
+		{
+			//VkSampler sampler = CreateSampler();
+			//Image image = CreateSampledImage();
+			return {};
+		}
+
+		Image CreateStorageImage(VkDevice device, VkPhysicalDevice gpu, VkFormat imageFormat, 
+			VkImageType imageType, VkExtent3D size, uint32_t mipmapLevels,
+			uint32_t layers, VkSampleCountFlagBits samples, VkImageViewType viewType, 
+			VkImageAspectFlags aspectMask)
+		{
+			VkFormatProperties imageFormatProps;
+			vkGetPhysicalDeviceFormatProperties(gpu, imageFormat, &imageFormatProps);
+
+
+			if (!(imageFormatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
+			{
+				LOG_INFO("Type desiredFeature isnt supported");
+			}
+
+			VkImage image = CreateImage(device, imageType, imageFormat, size, 
+				mipmapLevels, layers, samples, VK_IMAGE_USAGE_STORAGE_BIT);
+
+			VkDeviceMemory imageMemory = AllocateImageMemory(gpu, device, 
+				image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+			VkImageView view = CreateImageView(device, image, viewType, imageFormat, aspectMask);
+
+			return { image, view };
+		}
+
+		Buffer CreateUniformTexelBuffer(VkDevice device, VkPhysicalDevice gpu, VkFormat bufferFormat,
+			VkDeviceSize size, VkBufferUsageFlags bufferUsageFlags)
+		{
+			VkFormatProperties bufferFormatProps;
+			vkGetPhysicalDeviceFormatProperties(gpu, bufferFormat, &bufferFormatProps);
+
+			if (!(bufferFormatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT))
+			{
+				LOG_INFO("Type desiredFeature isnt supported");
+			}
+
+			VkBuffer buffer = CreateBuffer(device, size, bufferUsageFlags | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT,
+				VK_SHARING_MODE_EXCLUSIVE);
+			VkDeviceMemory bufferMemory = AllocateBufferMemory(gpu, device, buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VkBufferView view = CreateBufferView(device, buffer, bufferFormat, size, 0);
+			return { buffer, view };
+		}
+
+		Buffer CreateStorageTexelBuffer(VkDevice device, VkPhysicalDevice gpu, VkFormat bufferFormat,
+			VkDeviceSize size, VkBufferUsageFlags bufferUsageFlags)
+		{
+			VkFormatProperties bufferFormatProps;
+			vkGetPhysicalDeviceFormatProperties(gpu, bufferFormat, &bufferFormatProps);
+
+			if (!(bufferFormatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT))
+			{
+				LOG_INFO("Type desiredFeature isnt supported");
+			}
+
+			VkBuffer buffer = CreateBuffer(device, size, bufferUsageFlags | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT,
+				VK_SHARING_MODE_EXCLUSIVE);
+			VkDeviceMemory bufferMemory = AllocateBufferMemory(gpu, device, buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VkBufferView view = CreateBufferView(device, buffer, bufferFormat, size, 0);
+			return { buffer, view };
+		}
+
+		VkBuffer CreateUniformBuffer(VkDevice device, VkPhysicalDevice gpu, 
+			VkDeviceSize size, VkBufferUsageFlags bufferUsageFlags)
+		{
+			VkBuffer buffer = CreateBuffer(device, size, bufferUsageFlags | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_SHARING_MODE_EXCLUSIVE);
+			VkDeviceMemory bufferMemory = AllocateBufferMemory(gpu, device, buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			return buffer;
+		}
+
+		VkBuffer CreateStorageBuffer(VkDevice device, VkPhysicalDevice gpu, VkFormat bufferFormat,
+			VkDeviceSize size, VkBufferUsageFlags bufferUsageFlags)
+		{
+			VkBuffer buffer = CreateBuffer(device, size, bufferUsageFlags | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+				VK_SHARING_MODE_EXCLUSIVE);
+			VkDeviceMemory bufferMemory = AllocateBufferMemory(gpu, device, buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			return buffer;
+		}
+
+		Image CreateInputAttachment(VkDevice device, VkPhysicalDevice gpu, VkFormat imageFormat,
+			VkImageType imageType, VkExtent3D size, uint32_t mipmapLevels,
+			uint32_t layers, VkSampleCountFlagBits samples, VkImageViewType viewType,
+			VkImageAspectFlags aspectMask, VkFormatFeatureFlags desiredInputType, VkImageUsageFlags imageUsage)
+		{
+			VkFormatProperties imageFormatProps;
+			vkGetPhysicalDeviceFormatProperties(gpu, imageFormat, &imageFormatProps);
+
+			if (!(imageFormatProps.optimalTilingFeatures & desiredInputType))
+			{
+				LOG_INFO("Type desiredFeature isnt supported");
+			}
+
+			VkImage image = CreateImage(device, imageType, imageFormat, size,
+				mipmapLevels, layers, samples, imageUsage);
+
+			VkDeviceMemory imageMemory = AllocateImageMemory(gpu, device,
+				image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+			VkImageView view = CreateImageView(device, image, viewType, imageFormat, aspectMask);
+
+			return { image, view };
+		}
+
+		VkDescriptorSetLayout CreateDescriptorSetLayout(VkDevice device, std::vector<VkDescriptorSetLayoutBinding> bindings)
+		{
+			VkDescriptorSetLayoutCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.bindingCount = static_cast<uint32_t>(bindings.size());
+			info.pBindings = bindings.data();
+
+			VkDescriptorSetLayout layout;
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &info, nullptr, &layout));
+			return layout;
+		}
+
+		VkDescriptorPool CreateDescriptorPool(VkDevice device, VkDescriptorPoolCreateFlags flags, 
+			uint32_t maxSets, std::vector<VkDescriptorPoolSize> descriptorTypes)
+		{
+			VkDescriptorPoolCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = flags;
+			info.maxSets = maxSets;
+			info.poolSizeCount = static_cast<uint32_t>(descriptorTypes.size());
+			info.pPoolSizes = descriptorTypes.data();
+
+			VkDescriptorPool pool;
+			VK_CHECK_RESULT(vkCreateDescriptorPool(device, &info, nullptr, &pool));
+			return pool;
+		}
+
+		std::vector<VkDescriptorSet> AllocateDescriptorSet(VkDevice device, VkDescriptorPool pool, std::vector<VkDescriptorSetLayout> layouts)
+		{
+			VkDescriptorSetAllocateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			info.pNext = nullptr;
+			info.descriptorPool = pool;
+			info.descriptorSetCount = static_cast<uint32_t>(layouts.size());
+			info.pSetLayouts = layouts.data();
+
+			std::vector<VkDescriptorSet> sets(layouts.size());
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &info, sets.data()));
+			return sets;
+		}
+
+		struct ImageDescriptorInfo
+		{
+			VkDescriptorSet descriptorSet;
+			uint32_t binding;
+			uint32_t arrayElement;
+			VkDescriptorType descriptorType;
+			std::vector<VkDescriptorImageInfo> imageInfo;
+		};
+
+		struct BufferDescriptorInfo
+		{
+			VkDescriptorSet descriptorSet;
+			uint32_t binding;
+			uint32_t arrayElement;
+			VkDescriptorType descriptorType;
+			std::vector<VkDescriptorBufferInfo> bufferInfo;
+		};
+
+		struct TexelBufferDescriptorInfo
+		{
+			VkDescriptorSet descriptorSet;
+			uint32_t binding;
+			uint32_t arrayElement;
+			VkDescriptorType descriptorType;
+			std::vector<VkBufferView> bufferInfo;
+		};
+
+		struct CopyDescriptorInfo 
+		{
+			VkDescriptorSet srcDescriptorSet;
+			uint32_t srcBinding;
+			uint32_t srcArrayElement;
+			VkDescriptorSet dstDescriptorSet;
+			uint32_t dstBinding;
+			uint32_t dstArrayElement;
+			uint32_t descriptorsCount;
+		};
+
+		void UpdateDecsriptorSets(VkDevice device, std::vector<ImageDescriptorInfo>& imageDescriptorsInfo,
+			std::vector<BufferDescriptorInfo>& bufferDescriptorsInfo,
+			std::vector<TexelBufferDescriptorInfo>& texelBufferDescriptorsInfo,
+			std::vector<CopyDescriptorInfo>& copyDescriptorsInfo)
+		{
+			std::vector<VkWriteDescriptorSet> writeDescriptors;
+			std::vector<VkCopyDescriptorSet> copyDescriptors;
+
+			for (auto& imageDescriptor : imageDescriptorsInfo)
+			{
+				writeDescriptors.push_back({
+					VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+					nullptr,
+					imageDescriptor.descriptorSet,
+					imageDescriptor.binding,
+					imageDescriptor.arrayElement,
+					static_cast<uint32_t>(imageDescriptor.imageInfo.size()),
+					imageDescriptor.descriptorType,
+					imageDescriptor.imageInfo.data(),
+					nullptr,
+					nullptr
+					});
+			}
+
+			for (auto& bufferDescriptor : bufferDescriptorsInfo)
+			{
+				writeDescriptors.push_back({
+					VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+					nullptr,
+					bufferDescriptor.descriptorSet,
+					bufferDescriptor.binding,
+					bufferDescriptor.arrayElement,
+					static_cast<uint32_t>(bufferDescriptor.bufferInfo.size()),
+					bufferDescriptor.descriptorType,
+					nullptr,
+					bufferDescriptor.bufferInfo.data(),
+					nullptr
+					});
+			}
+
+			for (auto& texelDescriptor : texelBufferDescriptorsInfo)
+			{
+				writeDescriptors.push_back({
+					VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+					nullptr,
+					texelDescriptor.descriptorSet,
+					texelDescriptor.binding,
+					texelDescriptor.arrayElement,
+					static_cast<uint32_t>(texelDescriptor.bufferInfo.size()),
+					texelDescriptor.descriptorType,
+					nullptr,
+					nullptr,
+					texelDescriptor.bufferInfo.data(),
+					});
+			}
+
+			for (auto& cpyInfo : copyDescriptorsInfo)
+			{
+				copyDescriptors.push_back({
+					VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET,
+					nullptr,
+					cpyInfo.srcDescriptorSet,
+					cpyInfo.srcBinding,
+					cpyInfo.srcArrayElement,
+					cpyInfo.dstDescriptorSet,
+					cpyInfo.dstBinding,
+					cpyInfo.dstArrayElement,
+					cpyInfo.descriptorsCount
+					});
+			}
+
+			vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(),
+				static_cast<uint32_t>(copyDescriptors.size()), copyDescriptors.data());
+		}
+
+		void BindDescriptorSets(VkCommandBuffer cmdBuf, VkPipelineBindPoint pipelineType, 
+			VkPipelineLayout layout, std::vector<VkDescriptorSet>  sets, uint32_t indexForFirstSet)
+		{
+			BeginCommandBufferRecord(cmdBuf, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+			vkCmdBindDescriptorSets(cmdBuf, pipelineType, layout, indexForFirstSet, static_cast<uint32_t>(sets.size()),
+				sets.data(), 0, nullptr);
+			EndCommandBufferRecord(cmdBuf);
+		}
+
+		void CreateDescriptorsWithTextureAndUniformBuffer(VkDevice device, VkPhysicalDevice gpu, VkExtent3D sampledImageSize,
+			VkDeviceSize bufferSize)
+		{
+			VkSampler sampler = CreateSampler(device, VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST,
+				VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
+				0.0f, false, 1.0f, false, VK_COMPARE_OP_ALWAYS, 0.0f, 0.0f, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
+				false);
+			Image sampledImage = CreateSampledImage(device, gpu, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT,
+				VK_IMAGE_TYPE_2D, sampledImageSize, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
+
+			VkBuffer uniformBuffer = CreateUniformBuffer(device, gpu, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
+			std::vector<VkDescriptorSetLayoutBinding> bindings =
+			{
+				{
+					0, 
+					VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+					1,
+					VK_SHADER_STAGE_FRAGMENT_BIT,
+					nullptr
+				},
+				{
+					1,
+					VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+					1,
+					VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+					nullptr
+				}
+			};
+
+			VkDescriptorSetLayout layout = CreateDescriptorSetLayout(device, bindings);
+
+			std::vector<VkDescriptorPoolSize> descriptorTypes =
+			{
+				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}
+			};
+
+			VkDescriptorPool pool = CreateDescriptorPool(device, 0, 1, descriptorTypes);
+			std::vector<VkDescriptorSet> descriptorSets = AllocateDescriptorSet(device, pool, { layout });
+
+			ImageDescriptorInfo samplerInfo{};
+			samplerInfo.descriptorSet = descriptorSets[0];
+			samplerInfo.binding = 0;
+			samplerInfo.arrayElement = 0;
+			samplerInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.sampler = sampler;
+			imageInfo.imageView = sampledImage.view;
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			samplerInfo.imageInfo = { imageInfo } ;
+
+			BufferDescriptorInfo bufferInfo{};
+			bufferInfo.descriptorSet = descriptorSets[1];
+			bufferInfo.binding = 1;
+			bufferInfo.arrayElement = 0;
+			bufferInfo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			VkDescriptorBufferInfo bufferDI{};
+			bufferDI.buffer = uniformBuffer;
+			bufferDI.offset = 0;
+			bufferDI.range = VK_WHOLE_SIZE;
+			bufferInfo.bufferInfo = { bufferDI };
+
+			UpdateDecsriptorSets(device, { samplerInfo }, { bufferInfo }, {}, {});
+
+		}
+
+		void FreeDescriptorSets(VkDevice device, VkDescriptorPool pool, std::vector<VkDescriptorSet> sets)
+		{
+			VK_CHECK_RESULT(vkFreeDescriptorSets(device, pool, static_cast<uint32_t>(sets.size()), sets.data()));
+			sets.clear();
+		}
+
+		void ResetDescriptorPool(VkDevice device, VkDescriptorPool pool)
+		{
+			VK_CHECK_RESULT(vkResetDescriptorPool(device, pool, 0));
+		}
+
+		void DesctroyDescriptorPool(VkDevice device, VkDescriptorPool pool)
+		{
+			vkDestroyDescriptorPool(device, pool, nullptr);
+		}
+
+		void DestroyDescroptorSetLayout(VkDevice device, VkDescriptorSetLayout layout)
+		{
+			vkDestroyDescriptorSetLayout(device, layout, nullptr);
+		}
+
+		void DestroySampler(VkDevice device, VkSampler sampler)
+		{
+			vkDestroySampler(device, sampler, nullptr);
 		}
 	};
 }

@@ -1007,5 +1007,336 @@ namespace vk
 		{
 			vkDestroySampler(device, sampler, nullptr);
 		}
+
+		//render passes
+		VkAttachmentDescription SpecifyColorAttachmentDescription()
+		{
+			return {
+				0,
+				VK_FORMAT_R8G8B8A8_UNORM,
+				VK_SAMPLE_COUNT_1_BIT,
+				VK_ATTACHMENT_LOAD_OP_CLEAR,
+				VK_ATTACHMENT_STORE_OP_STORE,
+				VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+			};
+		}
+
+		VkAttachmentDescription SpecifyDepthAttachmentDescription()
+		{
+			return {
+				0,
+				VK_FORMAT_D16_UNORM,
+				VK_SAMPLE_COUNT_1_BIT,
+				VK_ATTACHMENT_LOAD_OP_CLEAR,
+				VK_ATTACHMENT_STORE_OP_STORE,
+				VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+			};
+		}
+
+		struct SubpassParams
+		{
+			VkPipelineBindPoint pipelineType;
+			std::vector<VkAttachmentReference> inputAttachments;
+			std::vector<VkAttachmentReference> colorAttachments;
+			std::vector<VkAttachmentReference> resolveAttachments;
+			VkAttachmentReference depthStencilAttachment;
+			std::vector<uint32_t> preserveAttachments;
+		};
+
+		std::vector<VkSubpassDescription> SpecifySubpassDescriptions(std::vector<SubpassParams>& params)
+		{
+			std::vector<VkSubpassDescription> descriptions(params.size());
+			int index = 0;
+			for (auto& descriptor : descriptions)
+			{
+				descriptor.flags = 0;
+				descriptor.pipelineBindPoint = params[index].pipelineType;
+
+				descriptor.inputAttachmentCount = static_cast<uint32_t>(params[index].inputAttachments.size());
+				descriptor.pInputAttachments = params[index].inputAttachments.data();
+
+				descriptor.colorAttachmentCount = static_cast<uint32_t>(params[index].colorAttachments.size());
+				descriptor.pColorAttachments = params[index].colorAttachments.data();
+
+				descriptor.pResolveAttachments = params[index].resolveAttachments.data();
+				descriptor.pDepthStencilAttachment = &params[index].depthStencilAttachment;
+
+				descriptor.preserveAttachmentCount = static_cast<uint32_t>(params[index].preserveAttachments.size());
+				descriptor.pPreserveAttachments = params[index].preserveAttachments.data();
+
+				index++;
+			}
+			return descriptions;
+		}
+
+		void SpecifyDependencyBetweenSubpasses()
+		{
+			//p 299(329) from CookBook
+			//exampe
+			std::vector<VkSubpassDependency> subpassDependencies = {
+				{
+					0,
+					1,
+					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+					VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+					VK_DEPENDENCY_BY_REGION_BIT
+				},
+			};
+		}
+
+		VkRenderPass CreateRenderPass(VkDevice device,
+			std::vector<VkAttachmentDescription> attachmentDescriptions,
+			std::vector<VkSubpassDescription> subpassDescriptions, 
+			std::vector<VkSubpassDependency> subpassDependencies)
+		{
+			VkRenderPassCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
+			info.pAttachments = attachmentDescriptions.data();
+			info.dependencyCount = static_cast<uint32_t>(subpassDependencies.size());
+			info.pDependencies = subpassDependencies.data();
+			info.subpassCount = static_cast<uint32_t>(subpassDescriptions.size());
+			info.pSubpasses = subpassDescriptions.data();
+
+			VkRenderPass pass;
+			VK_CHECK_RESULT(vkCreateRenderPass(device, &info, nullptr, &pass));
+			return pass;
+		}
+
+		VkFramebuffer CreateFramebuffer(VkDevice device, VkRenderPass renderPass, std::vector<VkImageView> attachments,
+			VkExtent2D framebufferSize, uint32_t layersCount)
+		{
+			VkFramebufferCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.renderPass = renderPass;
+			info.attachmentCount = static_cast<uint32_t>(attachments.size());
+			info.pAttachments = attachments.data();
+			info.width = framebufferSize.width;
+			info.height = framebufferSize.height;
+			info.layers = layersCount;
+			
+			VkFramebuffer buffer;
+			VK_CHECK_RESULT(vkCreateFramebuffer(device, &info, nullptr, &buffer));
+			return buffer;
+		}
+
+		//exercises
+		void PrepareRenderPassForGeometryRenderAndPostProcessSubpass(VkDevice device)
+		{
+			std::vector<VkAttachmentDescription> attachmentsDescriptions(3);
+			//color
+			attachmentsDescriptions[0].flags = 0;
+			attachmentsDescriptions[0].format = VK_FORMAT_R8G8B8A8_UNORM;
+			attachmentsDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachmentsDescriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachmentsDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachmentsDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachmentsDescriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachmentsDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentsDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			//color
+			attachmentsDescriptions[1].flags = 0;
+			attachmentsDescriptions[1].format = VK_FORMAT_D16_UNORM;
+			attachmentsDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachmentsDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachmentsDescriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachmentsDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachmentsDescriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachmentsDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentsDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			//color
+			attachmentsDescriptions[2].flags = 0;
+			attachmentsDescriptions[2].format = VK_FORMAT_R8G8B8A8_UNORM;
+			attachmentsDescriptions[2].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachmentsDescriptions[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachmentsDescriptions[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachmentsDescriptions[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachmentsDescriptions[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachmentsDescriptions[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentsDescriptions[2].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+			VkAttachmentReference depthStencilReference = {
+				1,
+				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+			};
+
+			std::vector<SubpassParams> subpassParams(2);
+			subpassParams[0].pipelineType = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpassParams[0].inputAttachments = {};
+			subpassParams[0].colorAttachments = {
+				{
+					0,
+					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+				}
+			};
+			subpassParams[0].resolveAttachments = {};
+			subpassParams[0].depthStencilAttachment = depthStencilReference;
+			subpassParams[0].preserveAttachments = {};
+
+			subpassParams[1].pipelineType = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpassParams[1].inputAttachments = {
+				{
+					2,
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+				} 
+			};
+			subpassParams[1].colorAttachments = {
+				{
+					0,
+					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+				}
+			};
+			subpassParams[1].resolveAttachments = {};
+			subpassParams[1].depthStencilAttachment = {};
+			subpassParams[1].preserveAttachments = {};
+
+			std::vector<VkSubpassDependency> subpassDeps =
+			{
+				{
+					0,
+					1,
+					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+					VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+					VK_DEPENDENCY_BY_REGION_BIT
+				}
+			};
+
+			std::vector<VkSubpassDescription> deps = SpecifySubpassDescriptions(subpassParams);
+			VkRenderPass pass = CreateRenderPass(device, attachmentsDescriptions, deps, subpassDeps);
+		}
+
+		void PrepareRenderPassAndFramebufferWithColorAndDepthAttachments(VkDevice device, VkPhysicalDevice gpu,
+			VkExtent3D imageSize)
+		{
+			VkImage colorImage = CreateImage(device, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM,
+				imageSize, 0, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_SAMPLED_BIT);
+			VkDeviceMemory colorImageMemory = AllocateImageMemory(gpu, device, colorImage, 
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VkImageView colorImageView = CreateImageView(device, colorImage, VK_IMAGE_VIEW_TYPE_2D,
+				VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+
+			VkImage depthImage = CreateImage(device, VK_IMAGE_TYPE_2D, VK_FORMAT_D16_UNORM,
+				imageSize, 0, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+			VkDeviceMemory depthImageMemory = AllocateImageMemory(gpu, device, colorImage,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VkImageView depthImageView = CreateImageView(device, colorImage, VK_IMAGE_VIEW_TYPE_2D,
+				VK_FORMAT_D16_UNORM, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+			std::vector<VkAttachmentDescription> attachmentsDescriptions(3);
+			//color
+			attachmentsDescriptions[0].flags = 0;
+			attachmentsDescriptions[0].format = VK_FORMAT_R8G8B8A8_UNORM;
+			attachmentsDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachmentsDescriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachmentsDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachmentsDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachmentsDescriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachmentsDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentsDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			//color
+			attachmentsDescriptions[1].flags = 0;
+			attachmentsDescriptions[1].format = VK_FORMAT_D16_UNORM;
+			attachmentsDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachmentsDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachmentsDescriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachmentsDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachmentsDescriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachmentsDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentsDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentReference depthStencilReference = {
+				1,
+				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+			};
+
+			std::vector<SubpassParams> subpassParams(1);
+			subpassParams[0].pipelineType = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpassParams[0].inputAttachments = {};
+			subpassParams[0].colorAttachments = {
+				{
+					0,
+					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+				}
+			};
+			subpassParams[0].resolveAttachments = {};
+			subpassParams[0].depthStencilAttachment = depthStencilReference;
+			subpassParams[0].preserveAttachments = {};
+
+			std::vector<VkSubpassDescription> deps = SpecifySubpassDescriptions(subpassParams);
+
+			std::vector<VkSubpassDependency> subpassDeps =
+			{
+				{
+					0,
+					VK_SUBPASS_EXTERNAL,
+					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+					VK_ACCESS_SHADER_READ_BIT,
+					0
+				}
+			};
+
+			VkRenderPass pass = CreateRenderPass(device, attachmentsDescriptions, deps, subpassDeps);
+			VkFramebuffer buffer = CreateFramebuffer(device, pass, 
+				{ colorImageView, depthImageView }, 
+				{ imageSize.width, imageSize.height }, 1);
+		}
+
+		void BeginRenderPass(VkDevice device, VkRenderPass renderPass, 
+			VkCommandBuffer cmdBuf, VkFramebuffer framebuffer, VkRect2D renderArea, std::vector<VkClearValue> clearValues,
+			VkSubpassContents subpassContents)
+		{
+			VkRenderPassBeginInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			info.pNext = nullptr;
+			info.clearValueCount = static_cast<uint32_t>(clearValues.size());
+			info.pClearValues = clearValues.data();
+			info.framebuffer = framebuffer;
+			info.renderArea = renderArea;
+			info.renderPass = renderPass;
+			
+			//cmd buf must be in record state
+
+			vkCmdBeginRenderPass(cmdBuf, &info, subpassContents);
+
+		}
+
+		void ProcessToNextSubpass(VkCommandBuffer cmdBuf, VkSubpassContents contents)
+		{
+			vkCmdNextSubpass(cmdBuf, contents);
+		}
+
+		void EndRenderPass(VkCommandBuffer cmdBuf)
+		{
+			vkCmdEndRenderPass(cmdBuf);
+		}
+
+		void DestroyFramebuffer(VkDevice device, VkFramebuffer buffer)
+		{
+			vkDestroyFramebuffer(device, buffer, nullptr);
+		}
+
+		void DestroyRenderpass(VkDevice device, VkRenderPass pass)
+		{
+			vkDestroyRenderPass(device, pass, nullptr);
+		}
 	};
 }

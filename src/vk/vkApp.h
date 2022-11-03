@@ -1,5 +1,8 @@
 #pragma once
 
+#include <fstream>
+#include <thread>
+
 #include "vkDebugMesenger.h"
 #include "vkInstance.h"
 #include "vkLogicalDevice.h"
@@ -92,7 +95,7 @@ namespace vk
 			std::vector<WaitSemaphoreInfo> waitSemaphoresInfo,
 			std::vector<VkCommandBuffer> cmdBufs,
 			std::vector<VkSemaphore> signalSemaphores,
-			VkFence fence) 
+			VkFence fence)
 		{
 			std::vector<VkSemaphore> waitSemaphoreHandles;
 			std::vector<VkPipelineStageFlags> waitSemaphoreStagers;
@@ -103,7 +106,7 @@ namespace vk
 				waitSemaphoreStagers.emplace_back(wait_semaphore_info.WaitingStage);
 			}
 
-			VkSubmitInfo submit_info = 
+			VkSubmitInfo submit_info =
 			{
 			  VK_STRUCTURE_TYPE_SUBMIT_INFO,
 			  nullptr,
@@ -120,11 +123,11 @@ namespace vk
 		}
 
 		void WaitForFences(VkDevice device, std::vector<VkFence> const& fences,
-			VkBool32 waitForAllFences, uint64_t timeOut) 
+			VkBool32 waitForAllFences, uint64_t timeOut)
 		{
-			if (fences.size() > 0) 
+			if (fences.size() > 0)
 			{
-				VK_CHECK_RESULT(vkWaitForFences(device, static_cast<uint32_t>(fences.size()), 
+				VK_CHECK_RESULT(vkWaitForFences(device, static_cast<uint32_t>(fences.size()),
 					fences.data(), waitForAllFences, timeOut));
 			}
 		}
@@ -472,8 +475,8 @@ namespace vk
 				static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
 		}
 
-		void UpdateImageUsingStagingBuffer(VkDevice device, VkPhysicalDevice gpu, 
-			void *dataToCopy, VkDeviceSize copySize, VkCommandBuffer cmdBuf, VkImage dstImage, 
+		void UpdateImageUsingStagingBuffer(VkDevice device, VkPhysicalDevice gpu,
+			void* dataToCopy, VkDeviceSize copySize, VkCommandBuffer cmdBuf, VkImage dstImage,
 			VkQueue queue, std::vector<VkSemaphore>& semaphores,
 			VkAccessFlags dstImageCurrentAccessFlags, VkAccessFlags dstImageNewAccessFlags,
 			VkImageLayout dstImageCurrentImageLayout, VkImageLayout dstImageNewImageLayout,
@@ -618,7 +621,7 @@ namespace vk
 			return sampler;
 		}
 
-		Image CreateSampledImage(VkDevice device, VkPhysicalDevice gpu, VkFormat imageFormat, 
+		Image CreateSampledImage(VkDevice device, VkPhysicalDevice gpu, VkFormat imageFormat,
 			VkFormatFeatureFlags desiredFeature, VkImageType imageType, VkExtent3D imageSize,
 			uint32_t imageLayers, uint32_t mipmapLevels, VkSampleCountFlagBits samplesCount,
 			VkImageViewType viewType, VkImageAspectFlags aspectFlags)
@@ -646,9 +649,9 @@ namespace vk
 			return {};
 		}
 
-		Image CreateStorageImage(VkDevice device, VkPhysicalDevice gpu, VkFormat imageFormat, 
+		Image CreateStorageImage(VkDevice device, VkPhysicalDevice gpu, VkFormat imageFormat,
 			VkImageType imageType, VkExtent3D size, uint32_t mipmapLevels,
-			uint32_t layers, VkSampleCountFlagBits samples, VkImageViewType viewType, 
+			uint32_t layers, VkSampleCountFlagBits samples, VkImageViewType viewType,
 			VkImageAspectFlags aspectMask)
 		{
 			VkFormatProperties imageFormatProps;
@@ -660,10 +663,10 @@ namespace vk
 				LOG_INFO("Type desiredFeature isnt supported");
 			}
 
-			VkImage image = CreateImage(device, imageType, imageFormat, size, 
+			VkImage image = CreateImage(device, imageType, imageFormat, size,
 				mipmapLevels, layers, samples, VK_IMAGE_USAGE_STORAGE_BIT);
 
-			VkDeviceMemory imageMemory = AllocateImageMemory(gpu, device, 
+			VkDeviceMemory imageMemory = AllocateImageMemory(gpu, device,
 				image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 			VkImageView view = CreateImageView(device, image, viewType, imageFormat, aspectMask);
@@ -707,7 +710,7 @@ namespace vk
 			return { buffer, view };
 		}
 
-		VkBuffer CreateUniformBuffer(VkDevice device, VkPhysicalDevice gpu, 
+		VkBuffer CreateUniformBuffer(VkDevice device, VkPhysicalDevice gpu,
 			VkDeviceSize size, VkBufferUsageFlags bufferUsageFlags)
 		{
 			VkBuffer buffer = CreateBuffer(device, size, bufferUsageFlags | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -763,7 +766,7 @@ namespace vk
 			return layout;
 		}
 
-		VkDescriptorPool CreateDescriptorPool(VkDevice device, VkDescriptorPoolCreateFlags flags, 
+		VkDescriptorPool CreateDescriptorPool(VkDevice device, VkDescriptorPoolCreateFlags flags,
 			uint32_t maxSets, std::vector<VkDescriptorPoolSize> descriptorTypes)
 		{
 			VkDescriptorPoolCreateInfo info{};
@@ -820,7 +823,7 @@ namespace vk
 			std::vector<VkBufferView> bufferInfo;
 		};
 
-		struct CopyDescriptorInfo 
+		struct CopyDescriptorInfo
 		{
 			VkDescriptorSet srcDescriptorSet;
 			uint32_t srcBinding;
@@ -906,7 +909,7 @@ namespace vk
 				static_cast<uint32_t>(copyDescriptors.size()), copyDescriptors.data());
 		}
 
-		void BindDescriptorSets(VkCommandBuffer cmdBuf, VkPipelineBindPoint pipelineType, 
+		void BindDescriptorSets(VkCommandBuffer cmdBuf, VkPipelineBindPoint pipelineType,
 			VkPipelineLayout layout, std::vector<VkDescriptorSet>  sets, uint32_t indexForFirstSet)
 		{
 			BeginCommandBufferRecord(cmdBuf, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -930,7 +933,7 @@ namespace vk
 			std::vector<VkDescriptorSetLayoutBinding> bindings =
 			{
 				{
-					0, 
+					0,
 					VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 					1,
 					VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -965,7 +968,7 @@ namespace vk
 			imageInfo.sampler = sampler;
 			imageInfo.imageView = sampledImage.view;
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			samplerInfo.imageInfo = { imageInfo } ;
+			samplerInfo.imageInfo = { imageInfo };
 
 			BufferDescriptorInfo bufferInfo{};
 			bufferInfo.descriptorSet = descriptorSets[1];
@@ -1094,7 +1097,7 @@ namespace vk
 
 		VkRenderPass CreateRenderPass(VkDevice device,
 			std::vector<VkAttachmentDescription> attachmentDescriptions,
-			std::vector<VkSubpassDescription> subpassDescriptions, 
+			std::vector<VkSubpassDescription> subpassDescriptions,
 			std::vector<VkSubpassDependency> subpassDependencies)
 		{
 			VkRenderPassCreateInfo info{};
@@ -1126,7 +1129,7 @@ namespace vk
 			info.width = framebufferSize.width;
 			info.height = framebufferSize.height;
 			info.layers = layersCount;
-			
+
 			VkFramebuffer buffer;
 			VK_CHECK_RESULT(vkCreateFramebuffer(device, &info, nullptr, &buffer));
 			return buffer;
@@ -1192,7 +1195,7 @@ namespace vk
 				{
 					2,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-				} 
+				}
 			};
 			subpassParams[1].colorAttachments = {
 				{
@@ -1226,7 +1229,7 @@ namespace vk
 		{
 			VkImage colorImage = CreateImage(device, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM,
 				imageSize, 0, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_SAMPLED_BIT);
-			VkDeviceMemory colorImageMemory = AllocateImageMemory(gpu, device, colorImage, 
+			VkDeviceMemory colorImageMemory = AllocateImageMemory(gpu, device, colorImage,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			VkImageView colorImageView = CreateImageView(device, colorImage, VK_IMAGE_VIEW_TYPE_2D,
 				VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -1295,12 +1298,12 @@ namespace vk
 			};
 
 			VkRenderPass pass = CreateRenderPass(device, attachmentsDescriptions, deps, subpassDeps);
-			VkFramebuffer buffer = CreateFramebuffer(device, pass, 
-				{ colorImageView, depthImageView }, 
+			VkFramebuffer buffer = CreateFramebuffer(device, pass,
+				{ colorImageView, depthImageView },
 				{ imageSize.width, imageSize.height }, 1);
 		}
 
-		void BeginRenderPass(VkDevice device, VkRenderPass renderPass, 
+		void BeginRenderPass(VkDevice device, VkRenderPass renderPass,
 			VkCommandBuffer cmdBuf, VkFramebuffer framebuffer, VkRect2D renderArea, std::vector<VkClearValue> clearValues,
 			VkSubpassContents subpassContents)
 		{
@@ -1312,7 +1315,7 @@ namespace vk
 			info.framebuffer = framebuffer;
 			info.renderArea = renderArea;
 			info.renderPass = renderPass;
-			
+
 			//cmd buf must be in record state
 
 			vkCmdBeginRenderPass(cmdBuf, &info, subpassContents);
@@ -1338,5 +1341,473 @@ namespace vk
 		{
 			vkDestroyRenderPass(device, pass, nullptr);
 		}
+
+		//graphics and compute pipeline
+		VkShaderModule CreateShaderModule(VkDevice device, std::vector<unsigned char> sourceCode)
+		{
+			VkShaderModuleCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.codeSize = sourceCode.size();
+			info.pCode = reinterpret_cast<uint32_t const*> (sourceCode.data());
+
+			VkShaderModule shaderModule{};
+			VK_CHECK_RESULT(vkCreateShaderModule(device, &info, nullptr, &shaderModule));
+			return shaderModule;
+		}
+
+		struct ShaderStageParams
+		{
+			VkShaderStageFlagBits shaderStage;
+			VkShaderModule shaderModule;
+			char const* entryPoint;
+			VkSpecializationInfo const* specialisationInfo;
+		};
+
+		std::vector<VkPipelineShaderStageCreateInfo>& SpecifyPipelineShaderStages(
+			std::vector<ShaderStageParams> shaderStageParams)
+		{
+			std::vector<VkPipelineShaderStageCreateInfo> infos(shaderStageParams.size());
+			for (auto& param : shaderStageParams)
+			{
+				VkPipelineShaderStageCreateInfo info{};
+				info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				info.pNext = nullptr;
+				info.flags = 0;
+				info.module = param.shaderModule;
+				info.pName = param.entryPoint;
+				info.pSpecializationInfo = param.specialisationInfo;
+				info.stage = param.shaderStage;
+				infos.push_back(info);
+			}
+			return infos;
+		}
+
+		VkPipelineVertexInputStateCreateInfo SpecifyBindingAttributeDescriptions(std::vector<VkVertexInputBindingDescription> bindDescriptions,
+			std::vector<VkVertexInputAttributeDescription> attribDescriptions)
+		{
+			VkPipelineVertexInputStateCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.vertexBindingDescriptionCount = static_cast<uint32_t>(bindDescriptions.size());
+			info.pVertexBindingDescriptions = bindDescriptions.data();
+			info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribDescriptions.size());
+			info.pVertexAttributeDescriptions = attribDescriptions.data();
+			return info;
+		}
+
+		VkPipelineInputAssemblyStateCreateInfo SpecifyPipelineInputAssemblyState(VkBool32 primitiveRestartEnable,
+			VkPrimitiveTopology topology)
+		{
+			VkPipelineInputAssemblyStateCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.primitiveRestartEnable = primitiveRestartEnable;
+			info.topology = topology;
+		}
+
+		VkPipelineTessellationStateCreateInfo SpecifyTessState(uint32_t patchesCout)
+		{
+			VkPipelineTessellationStateCreateInfo info = {
+				VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
+				nullptr,
+				0,
+				patchesCout
+			};
+			return info;
+		}
+
+		struct ViewportInfo
+		{
+			std::vector<VkViewport> viewPorts;
+			std::vector<VkRect2D> scissors;
+		};
+
+		VkPipelineViewportStateCreateInfo SpecifyViewportAndScissorsState(ViewportInfo viewportInfo)
+		{
+			VkPipelineViewportStateCreateInfo info =
+			{
+				VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+				nullptr,
+				0,
+				static_cast<uint32_t>(viewportInfo.viewPorts.size()),
+				viewportInfo.viewPorts.data(),
+				static_cast<uint32_t>(viewportInfo.scissors.size()),
+				viewportInfo.scissors.data(),
+			};
+			return info;
+		}
+
+		VkPipelineRasterizationStateCreateInfo SpecifyRasterizationState(VkBool32 depthClampEnable,
+			VkBool32 rasterizerDiscardEnabled, VkPolygonMode polygonMode, VkCullModeFlags cullMode,
+			VkFrontFace frontFace, VkBool32 depthBiasEnabled, float depthBiasFactor,
+			float depthBiasClamp, float depthBiasSlope, float lineWidth)
+		{
+			VkPipelineRasterizationStateCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.depthClampEnable = depthClampEnable;
+			info.rasterizerDiscardEnable = rasterizerDiscardEnabled;
+			info.polygonMode = polygonMode;
+			info.cullMode = cullMode;
+			info.frontFace = frontFace;
+			info.depthBiasEnable = depthBiasEnabled;
+			info.depthBiasConstantFactor = depthBiasFactor;
+			info.depthBiasClamp = depthBiasClamp;
+			info.depthBiasSlopeFactor = depthBiasSlope;
+			info.lineWidth = lineWidth;
+			return info;
+		}
+
+		VkPipelineMultisampleStateCreateInfo SpecifyMultisamplingState(
+			VkSampleCountFlagBits rasterizationSamples,
+			VkBool32 sampleShadingEnable,
+			float minSampleShading,
+			const VkSampleMask* pSampleMask,
+			VkBool32 alphaToCoverageEnable,
+			VkBool32 alphaToOneEnable)
+		{
+			VkPipelineMultisampleStateCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.rasterizationSamples = rasterizationSamples;
+			info.sampleShadingEnable = sampleShadingEnable;
+			info.minSampleShading = minSampleShading;
+			info.pSampleMask = pSampleMask;
+			info.alphaToCoverageEnable = alphaToCoverageEnable;
+			info.alphaToOneEnable = alphaToOneEnable;
+			return info;
+		}
+
+		VkPipelineDepthStencilStateCreateInfo SpecifyDepthStencilState(
+			VkBool32 depthTestEnable,
+			VkBool32 depthWriteEnable,
+			VkCompareOp depthCompareOp,
+			VkBool32 depthBoundsTestEnable,
+			VkBool32 stencilTestEnable,
+			VkStencilOpState front,
+			VkStencilOpState back,
+			float minDepthBounds,
+			float maxDepthBounds)
+		{
+			VkPipelineDepthStencilStateCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.depthTestEnable = depthTestEnable;
+			info.depthWriteEnable = depthWriteEnable;
+			info.depthCompareOp = depthCompareOp;
+			info.depthBoundsTestEnable = depthBoundsTestEnable;
+			info.stencilTestEnable = stencilTestEnable;
+			info.front = front;
+			info.back = back;
+			info.minDepthBounds = minDepthBounds;
+			info.maxDepthBounds = maxDepthBounds;
+			return info;
+		}
+
+		VkPipelineColorBlendStateCreateInfo SpecifyColorBlendState(
+			std::vector< VkPipelineColorBlendAttachmentState> states,
+			VkBool32 logicOpEnable,
+			VkLogicOp logicOp,
+			uint32_t attachmentCount,
+			const VkPipelineColorBlendAttachmentState* pAttachments,
+			float blendConstants[4])
+		{
+			VkPipelineColorBlendStateCreateInfo info =
+			{
+				VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+				nullptr,
+				0,
+				logicOpEnable,
+				logicOp,
+				attachmentCount,
+				pAttachments,
+				blendConstants[0]
+			};
+			return info;
+		}
+
+		VkPipelineDynamicStateCreateInfo SpecifyDynamicStates(std::vector<VkDynamicState> dynStates)
+		{
+			VkPipelineDynamicStateCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.dynamicStateCount = static_cast<uint32_t>(dynStates.size());
+			info.pDynamicStates = dynStates.data();
+			return info;
+		}
+
+		VkPipelineLayout CreatePipelineLayout(VkDevice device,
+			std::vector<VkDescriptorSetLayout> layouts,
+			std::vector<VkPushConstantRange> pushConstantRange)
+		{
+			VkPipelineLayoutCreateInfo info =
+			{
+				VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+				nullptr,
+				0,
+				static_cast<uint32_t>(layouts.size()),
+				layouts.data(),
+				static_cast<uint32_t>(pushConstantRange.size()),
+				pushConstantRange.data()
+			};
+
+			VkPipelineLayout layout;
+			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &info, nullptr, &layout));
+			return layout;
+		}
+
+		VkGraphicsPipelineCreateInfo SpecifyGraphicsPipelineCreateInfo(
+			VkPipelineCreateFlags additionalOptions,
+			std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo,
+			VkPipelineVertexInputStateCreateInfo vertexInputStateInfo,
+			VkPipelineInputAssemblyStateCreateInfo assemblyInfo,
+			VkPipelineTessellationStateCreateInfo tessInfo,
+			VkPipelineViewportStateCreateInfo viewportInfo,
+			VkPipelineRasterizationStateCreateInfo rasterizationInfo,
+			VkPipelineMultisampleStateCreateInfo msInfo,
+			VkPipelineDepthStencilStateCreateInfo depthStencilInfo,
+			VkPipelineColorBlendStateCreateInfo blendInfo,
+			VkPipelineDynamicStateCreateInfo dynamicInfo,
+			VkPipelineLayout layout,
+			VkRenderPass pass,
+			uint32_t subpass,
+			VkPipeline parentPipeline,
+			uint32_t parentIndex)
+		{
+			VkGraphicsPipelineCreateInfo info = {
+				VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+				nullptr,
+				additionalOptions,
+				static_cast<uint32_t>(shaderStagesInfo.size()),
+				shaderStagesInfo.data(),
+				&vertexInputStateInfo,
+				&assemblyInfo,
+				&tessInfo,
+				&viewportInfo,
+				&rasterizationInfo,
+				&msInfo,
+				&depthStencilInfo,
+				&blendInfo,
+				&dynamicInfo,
+				layout,
+				pass,
+				subpass,
+				parentPipeline,
+				parentIndex
+			};
+
+			return info;
+		}
+
+		VkPipelineCache CreatePipelineCacheObject(VkDevice device, std::vector<unsigned char> cacheData)
+		{
+			VkPipelineCacheCreateInfo info =
+			{
+				VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+				nullptr,
+				0,
+				static_cast<uint32_t>(cacheData.size()),
+				reinterpret_cast<const void*>(cacheData.data())
+			};
+
+			VkPipelineCache cache;
+			VK_CHECK_RESULT(vkCreatePipelineCache(device, &info, nullptr, &cache));
+			return cache;
+		}
+
+		std::vector<unsigned int>& RetrieveDataFromPipelineCache(VkDevice device, VkPipelineCache cache)
+		{
+			size_t dataSize;
+			std::vector<unsigned int> data;
+			VK_CHECK_RESULT(vkGetPipelineCacheData(device, cache, &dataSize, nullptr));
+			data.resize(dataSize);
+			VK_CHECK_RESULT(vkGetPipelineCacheData(device, cache, &dataSize, data.data()));
+			return data;
+		}
+
+		VkPipelineCache MergePipelineCaches(VkDevice device, std::vector<VkPipelineCache>& caches)
+		{
+			VkPipelineCache cache;
+			VK_CHECK_RESULT(vkMergePipelineCaches(device, cache,
+				static_cast<uint32_t>(caches.size()), caches.data()));
+			return cache;
+		}
+
+		void CreateGraphicsPipeline(VkDevice device, VkGraphicsPipelineCreateInfo info,
+			VkPipelineCache cache, VkPipeline& pipeline)
+		{
+			VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, cache, 1, &info, nullptr,
+				&pipeline));
+		}
+
+		VkPipeline CreateComputePipepline(VkDevice device, VkPipelineCreateFlags additionalOptions,
+			VkPipelineShaderStageCreateInfo shaderInfo, VkPipelineLayout layout,
+			VkPipelineCache cache, VkPipeline parent, uint32_t parentIndex)
+		{
+			VkComputePipelineCreateInfo info =
+			{
+				VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
+				nullptr,
+				additionalOptions,
+				shaderInfo,
+				layout,
+				parent,
+				parentIndex
+			};
+
+			VkPipeline computePipeline;
+			VK_CHECK_RESULT(vkCreateComputePipelines(device, cache, 1, &info, nullptr, &computePipeline));
+			return computePipeline;
+		}
+
+		void BindPipeline(VkCommandBuffer cmdBuf, VkPipeline pipeline, VkPipelineBindPoint type)
+		{
+			vkCmdBindPipeline(cmdBuf, type, pipeline);
+		}
+
+		VkPipelineLayout CreateLayoutWithCombinedImageSamplerBufferPushConstantRanges(VkDevice device,
+			std::vector<VkPushConstantRange> pushConstants)
+		{
+			std::vector<VkDescriptorSetLayoutBinding> layoutBinds(2);
+			layoutBinds[0].binding = 0;
+			layoutBinds[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			layoutBinds[0].descriptorCount = 1;
+			layoutBinds[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			layoutBinds[0].pImmutableSamplers = nullptr;
+
+			layoutBinds[1].binding = 1;
+			layoutBinds[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			layoutBinds[1].descriptorCount = 1;
+			layoutBinds[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			layoutBinds[1].pImmutableSamplers = nullptr;
+
+			VkDescriptorSetLayout layout = CreateDescriptorSetLayout(device, layoutBinds);
+			VkPipelineLayout pipelineLayout = CreatePipelineLayout(device, { layout }, pushConstants);
+			return pipelineLayout;
+		}
+
+		bool GetBinaryFileContents(std::string const& filename,
+			std::vector<unsigned char>& contents) {
+			contents.clear();
+
+			std::ifstream file(filename, std::ios::binary);
+			if (file.fail()) {
+				std::cout << "Could not open '" << filename << "' file." << std::endl;
+				return false;
+			}
+
+			std::streampos begin;
+			std::streampos end;
+			begin = file.tellg();
+			file.seekg(0, std::ios::end);
+			end = file.tellg();
+
+			if ((end - begin) == 0) {
+				std::cout << "The '" << filename << "' file is empty." << std::endl;
+				return false;
+			}
+			contents.resize(static_cast<size_t>(end - begin));
+			file.seekg(0, std::ios::beg);
+			file.read(reinterpret_cast<char*>(contents.data()), end - begin);
+			file.close();
+
+			return true;
+		}
+
+
+		VkPipeline CreateGraphicsPipeline(VkDevice device,
+			VkPipelineCreateFlags additionalOptions,
+			std::vector<unsigned char>& vertexCode,
+			std::vector<unsigned char> fragmentCode,
+			std::vector<VkVertexInputBindingDescription>& bindDescriptions,
+			std::vector<VkVertexInputAttributeDescription>& attribDescriptions,
+			VkPrimitiveTopology topology,
+			VkBool32 assemblyRestartEnable,
+			ViewportInfo viewPort, 
+			VkPolygonMode polygonMode, 
+			VkCullModeFlags cullMode, 
+			VkFrontFace frontFace,
+			VkPipelineLayout layout, 
+			VkRenderPass pass,
+			uint32_t subpass)
+		{
+			VkShaderModule vertexModule = CreateShaderModule(device, vertexCode);
+			VkShaderModule fragmentModule = CreateShaderModule(device, fragmentCode);
+
+			std::vector<ShaderStageParams> shaderParams(2);
+			shaderParams[0].entryPoint = "main";
+			shaderParams[0].shaderModule = vertexModule;
+			shaderParams[0].shaderStage = VK_SHADER_STAGE_VERTEX_BIT;
+			shaderParams[0].specialisationInfo = nullptr;
+
+			shaderParams[0].entryPoint = "main";
+			shaderParams[0].shaderModule = fragmentModule;
+			shaderParams[0].shaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
+			shaderParams[0].specialisationInfo = nullptr;
+
+			std::vector<VkPipelineShaderStageCreateInfo> shaderStages = SpecifyPipelineShaderStages(shaderParams);
+			VkPipelineVertexInputStateCreateInfo inputInfo = SpecifyBindingAttributeDescriptions(bindDescriptions, attribDescriptions);
+			VkPipelineInputAssemblyStateCreateInfo assemblyInfo = SpecifyPipelineInputAssemblyState(assemblyRestartEnable, topology);
+			VkPipelineViewportStateCreateInfo viewPortInfo = SpecifyViewportAndScissorsState(viewPort);
+			VkPipelineRasterizationStateCreateInfo rasterization = SpecifyRasterizationState(false, false,
+				polygonMode, cullMode, frontFace, false, 0.0f, 1.0f, 0.0f, 1.0f);
+			VkPipelineMultisampleStateCreateInfo msInfo = SpecifyMultisamplingState(VK_SAMPLE_COUNT_1_BIT,
+				false, 0.0f, nullptr, false, false);
+			VkStencilOpState stencilTest =
+			{
+				VK_STENCIL_OP_KEEP,
+				VK_STENCIL_OP_KEEP,
+				VK_STENCIL_OP_KEEP,
+				VK_COMPARE_OP_ALWAYS,
+				0,
+				0,
+				0,
+			};
+			VkPipelineDepthStencilStateCreateInfo depthStencilInfo = SpecifyDepthStencilState(true, true,
+				VK_COMPARE_OP_LESS_OR_EQUAL, false, 0.0f, stencilTest, {}, 0.0f, 1.0f);
+			std::vector<VkDynamicState> dynamicStates =
+			{
+				VK_DYNAMIC_STATE_VIEWPORT,
+				VK_DYNAMIC_STATE_SCISSOR,
+			};
+			VkPipelineDynamicStateCreateInfo dynInfo = SpecifyDynamicStates(dynamicStates);
+			VkGraphicsPipelineCreateInfo graphicsPipelineInfo = SpecifyGraphicsPipelineCreateInfo(additionalOptions,
+				shaderStages, inputInfo, assemblyInfo, {}, viewPortInfo, rasterization, msInfo, depthStencilInfo,
+				{}, dynInfo, layout, pass, subpass, {}, -1);
+
+			VkPipeline pipeline;
+			CreateGraphicsPipeline(device, graphicsPipelineInfo, {}, pipeline);
+			return pipeline;
+		}
+
+		void DestroyPipeline(VkDevice device, VkPipeline pipeline)
+		{
+			vkDestroyPipeline(device, pipeline, nullptr);
+		}
+
+		void DestroyPipelineCache(VkDevice device, VkPipelineCache pipelineCache)
+		{
+			vkDestroyPipelineCache(device, pipelineCache, nullptr);
+		}
+
+		void DestroyPipelineLayout(VkDevice device, VkPipelineLayout pipelineLayout)
+		{
+			vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+		}
+
+		void DestroyShadermodule(VkDevice device, VkShaderModule module)
+		{
+			vkDestroyShaderModule(device, module, nullptr);
+		}
+
+		//drawing
 	};
 }

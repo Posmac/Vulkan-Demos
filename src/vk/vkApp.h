@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <thread>
+#include <array>
 
 #include "vkDebugMesenger.h"
 #include "vkInstance.h"
@@ -1303,7 +1304,7 @@ namespace vk
 				{ imageSize.width, imageSize.height }, 1);
 		}
 
-		void BeginRenderPass(VkDevice device, VkRenderPass renderPass,
+		void BeginRenderPass(VkRenderPass renderPass,
 			VkCommandBuffer cmdBuf, VkFramebuffer framebuffer, VkRect2D renderArea, std::vector<VkClearValue> clearValues,
 			VkSubpassContents subpassContents)
 		{
@@ -1809,5 +1810,192 @@ namespace vk
 		}
 
 		//drawing
+		void ClearColorImage(VkCommandBuffer buffer, VkImage image, VkImageLayout layout,
+			std::vector<VkImageSubresourceRange> ranges, VkClearColorValue clearColor)
+		{
+			vkCmdClearColorImage(buffer, image, layout, &clearColor, static_cast<uint32_t>(ranges.size()),
+				ranges.data());
+		}
+
+		void ClearDepthStencilImage(VkCommandBuffer buffer, VkImage image, VkImageLayout layout,
+			std::vector<VkImageSubresourceRange> ranges, VkClearDepthStencilValue clearValues)
+		{
+			vkCmdClearDepthStencilImage(buffer, image, layout, &clearValues, static_cast<uint32_t>(ranges.size()),
+				ranges.data());
+		}
+
+		void ClearRenderPassAttachments(VkCommandBuffer buffer, std::vector<VkClearAttachment> attachments,
+			std::vector<VkClearRect> rects)
+		{
+			vkCmdClearAttachments(buffer, static_cast<uint32_t>(attachments.size()),
+				attachments.data(), static_cast<uint32_t>(rects.size()), rects.data());;
+		}
+
+		struct VertexBufferParams
+		{
+			VkBuffer buffer;
+			VkDeviceSize memoryOffset;
+		};
+
+		void BindVertexBuffers(VkCommandBuffer commandBuffer, std::vector<VertexBufferParams> bufferParams,
+			uint32_t firstBinding)
+		{
+			std::vector<VkBuffer> buffers(bufferParams.size());
+			std::vector<VkDeviceSize> offsets(bufferParams.size());
+
+			for (auto param : bufferParams)
+			{
+				buffers.push_back(param.buffer);
+				offsets.push_back(param.memoryOffset);
+			}
+
+			vkCmdBindVertexBuffers(commandBuffer, firstBinding, static_cast<uint32_t>(bufferParams.size()),
+				buffers.data(), offsets.data());
+		}
+
+		void BindIndexBuffer(VkCommandBuffer commandBuffer, VkBuffer indexBuffer, VkDeviceSize offset, VkIndexType type)
+		{
+			//befor it, we must bind index buffer using vkCmdBindIndexBuffer();
+			vkCmdBindIndexBuffer(commandBuffer, indexBuffer, offset, type);
+		}
+
+		void PushConstantToShader(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout,
+			VkShaderStageFlags pipelineStages, uint32_t offset, uint32_t size, void* dataToPush)
+		{
+			vkCmdPushConstants(commandBuffer, pipelineLayout, pipelineStages, offset, size, dataToPush);
+		}
+
+		void SetupViewportStateDynamically(VkCommandBuffer commandBuffer, uint32_t firstViewport,
+			std::vector<VkViewport> viewports)
+		{
+			vkCmdSetViewport(commandBuffer, firstViewport, 
+				static_cast<uint32_t>(viewports.size()), viewports.data());
+		}
+
+		void SetupScissorsStateDynamically(VkCommandBuffer commandBuffer, uint32_t firstScissor,
+			std::vector<VkRect2D> scrissors)
+		{
+			vkCmdSetScissor(commandBuffer, firstScissor,
+				static_cast<uint32_t>(scrissors.size()), scrissors.data());
+		}
+
+		void SetupLineWidthStateDynamically(VkCommandBuffer commandBuffer, float lineWidth)
+		{
+			vkCmdSetLineWidth(commandBuffer, lineWidth);
+		}
+
+		void SetupDepthBiasStateDynamically(VkCommandBuffer commandBuffer, float constantFactor,
+			float clamp, float slopeFactor)
+		{
+			vkCmdSetDepthBias(commandBuffer, constantFactor, clamp, slopeFactor);
+		}
+
+		void SetupBlendConstantsStateDynamically(VkCommandBuffer commandBuffer, std::array<float, 4> blendConstants)
+		{
+			vkCmdSetBlendConstants(commandBuffer, blendConstants.data());
+		}
+
+		void Draw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount,
+			uint32_t firstVertex, uint32_t firstInstance)
+		{
+			vkCmdDraw(commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
+		}
+
+		void DrawIndexed(VkCommandBuffer buffer, uint32_t indexCount, uint32_t instanceCount,
+			uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance)
+		{
+			vkCmdDrawIndexed(buffer, indexCount, instanceCount, firstIndex, vertexOffset,
+				firstInstance);
+		}
+
+		void DispatchComputeWork(VkCommandBuffer buffer, uint32_t xSize, uint32_t ySize, uint32_t zSize)
+		{
+			vkCmdDispatch(buffer, xSize, ySize, zSize);
+		}
+
+		void ExecuteSecondaryCommandBuffer(VkCommandBuffer commandBuffer, std::vector<VkCommandBuffer> secondaryBuffers)
+		{
+			vkCmdExecuteCommands(commandBuffer, static_cast<uint32_t>(secondaryBuffers.size()), secondaryBuffers.data());
+		}
+
+		struct Mesh
+		{
+			std::vector<float> data;
+			std::vector<uint32_t> vertexOffset;
+			std::vector<uint32_t> vertexCount;
+		};
+
+		//recording command buffer that draws a geometry with 
+		//dynamic viewport and scissor states
+		void RecordDrawingCommandBuffer(VkDevice device, VkCommandBuffer commandBuffer, VkImage swapchainImage,
+			uint32_t presentFamilyIndex, uint32_t computeFamilyIndex,
+			VkRenderPass renderPass, VkFramebuffer framebuffer, VkRect2D framebufferSize,
+			std::vector<VkClearValue> clearValues, VkPipeline pipeline,
+			std::vector<VertexBufferParams> vertexBufferParams, uint32_t firstVertexBufferBind,
+			VkPipelineLayout pipelineLayout, std::vector<VkDescriptorSet> sets, 
+			uint32_t firstDescriptorSet, Mesh mesh, uint32_t vertexCount, uint32_t instanceCount)
+		{
+			BeginCommandBufferRecord(commandBuffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+			
+			if (presentFamilyIndex != computeFamilyIndex)
+			{
+				ImageTransition transition = SetupImageTransition(swapchainImage,
+					VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+					presentFamilyIndex, computeFamilyIndex, VK_IMAGE_ASPECT_COLOR_BIT);
+				VkImageMemoryBarrier barrier = SetupImageMemoryBarrier(transition);
+				RecordImageTransition(commandBuffer, barrier, 
+					VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+			}
+
+			BeginRenderPass(renderPass, commandBuffer, framebuffer, framebufferSize,
+				clearValues, VK_SUBPASS_CONTENTS_INLINE);
+
+			BindPipeline(commandBuffer, pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+			VkViewport viewPort =
+			{
+				0.0f,
+				0.0f,
+				framebufferSize.extent.width,
+				framebufferSize.extent.height,
+				0.0f,
+				1.0f
+			};
+
+			SetupViewportStateDynamically(commandBuffer, 0, { viewPort });
+			
+			VkRect2D scissor =
+			{
+				0,
+				0,
+				framebufferSize.extent.width,
+				framebufferSize.extent.height
+			};
+
+			SetupScissorsStateDynamically(commandBuffer, 0, { scissor });
+
+			BindVertexBuffers(commandBuffer, vertexBufferParams, firstVertexBufferBind);
+			BindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout,
+				sets, firstDescriptorSet);
+
+			//setup later from there to draw
+			Draw(commandBuffer, vertexCount, instanceCount, 0, 0);
+
+			EndRenderPass(commandBuffer);
+
+			if (presentFamilyIndex != computeFamilyIndex)
+			{
+				ImageTransition transition = SetupImageTransition(swapchainImage,
+					VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+					presentFamilyIndex, computeFamilyIndex, VK_IMAGE_ASPECT_COLOR_BIT);
+				VkImageMemoryBarrier barrier = SetupImageMemoryBarrier(transition);
+				RecordImageTransition(commandBuffer, barrier,
+					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+			}
+
+			EndCommandBufferRecord(commandBuffer);
+;		}
 	};
 }

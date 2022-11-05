@@ -21,9 +21,7 @@ namespace vk
 		void Run(int width, int height);
 		bool IsRunning();
 		void Update();
-	private:
 		void QuerryAvailableLayers();
-	private:
 		int width;
 		int height;
 
@@ -38,7 +36,6 @@ namespace vk
 		CVkSwapchain swapchain;
 		Win32Window window;
 
-	private:
 		//TODO: abstract in some structure later
 		const std::vector<const char*> usedValidationLayers = {
 			"VK_LAYER_KHRONOS_validation",
@@ -498,8 +495,19 @@ namespace vk
 			VkImageMemoryBarrier beforeBarrier = SetupImageMemoryBarrier(transitionBefore);
 			RecordImageTransition(cmdBuf, beforeBarrier, dstImageCurrentPipelineFlags,
 				VK_PIPELINE_STAGE_TRANSFER_BIT);
+			VkBufferImageCopy imageCopy = {
+				0, 
+				0,
+				0,
+				dstSubresources, 
+				dstImageOffset,
+				dstImageSize
+			};
+
+			std::vector<VkBufferImageCopy> copies = { imageCopy };
+
 			CopyDataFromBufferToImage(cmdBuf, stagingBuffer, dstImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, { {0, 0, 0, dstSubresources, dstImageOffset, dstImageSize} });
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, copies);
 			ImageTransition transitionAfter = SetupImageTransition(dstImage, VK_ACCESS_TRANSFER_WRITE_BIT,
 				dstImageNewAccessFlags, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstImageNewImageLayout,
 				VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, aspectFlags);
@@ -982,8 +990,12 @@ namespace vk
 			bufferDI.range = VK_WHOLE_SIZE;
 			bufferInfo.bufferInfo = { bufferDI };
 
-			UpdateDecsriptorSets(device, { samplerInfo }, { bufferInfo }, {}, {});
-
+			std::vector<ImageDescriptorInfo> imageInfos = { samplerInfo };
+			std::vector<BufferDescriptorInfo> bufferInfos = { bufferInfo };
+			std::vector<TexelBufferDescriptorInfo> texelBufferDescriptorsInfo;
+			std::vector<CopyDescriptorInfo> copyDescriptorsInfo;
+			UpdateDecsriptorSets(device, imageInfos, bufferInfos,
+				texelBufferDescriptorsInfo, copyDescriptorsInfo);
 		}
 
 		void FreeDescriptorSets(VkDevice device, VkDescriptorPool pool, std::vector<VkDescriptorSet> sets)
@@ -1581,7 +1593,7 @@ namespace vk
 			VkRenderPass pass,
 			uint32_t subpass,
 			VkPipeline parentPipeline,
-			uint32_t parentIndex)
+			int32_t parentIndex)
 		{
 			VkGraphicsPipelineCreateInfo info = {
 				VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -1651,7 +1663,7 @@ namespace vk
 
 		VkPipeline CreateComputePipepline(VkDevice device, VkPipelineCreateFlags additionalOptions,
 			VkPipelineShaderStageCreateInfo shaderInfo, VkPipelineLayout layout,
-			VkPipelineCache cache, VkPipeline parent, uint32_t parentIndex)
+			VkPipelineCache cache, VkPipeline parent, int32_t parentIndex)
 		{
 			VkComputePipelineCreateInfo info =
 			{
@@ -1957,8 +1969,8 @@ namespace vk
 			{
 				0.0f,
 				0.0f,
-				framebufferSize.extent.width,
-				framebufferSize.extent.height,
+				static_cast<float>(framebufferSize.extent.width),
+				static_cast<float>(framebufferSize.extent.height),
 				0.0f,
 				1.0f
 			};
@@ -1981,7 +1993,6 @@ namespace vk
 
 			//setup later from there to draw
 			Draw(commandBuffer, vertexCount, instanceCount, 0, 0);
-
 			EndRenderPass(commandBuffer);
 
 			if (presentFamilyIndex != computeFamilyIndex)

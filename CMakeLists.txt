@@ -38,7 +38,7 @@ add_executable(VulkanBook
         src/Examples/VertexDiffuse.cpp
 
         external/stb_image.h 
-        external/tiny_obj_loader.h)
+        external/tiny_obj_loader.h )
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")

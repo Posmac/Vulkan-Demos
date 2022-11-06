@@ -50,23 +50,8 @@ namespace vk
                                 width, height, device.GetDevice(), gpu.GetGPU());
     }
 
-    void VulkanEntry::QuerryAvailableLayers()
-    {
-        if(!debugModeEnabled)
-        {
-            LOG_INFO("Debug mode disabled, no layers will be enabled");
-            return;
-        }
-
-        vkEnumerateInstanceLayerProperties(&availableLayersCount, nullptr);
-        if(availableLayersCount == 0)
-        {
-            LOG_INFO("Cannot querry layers");
-        }
-
-        availableLayers.resize(availableLayersCount);
-        vkEnumerateInstanceLayerProperties(&availableLayersCount, availableLayers.data());
-    }
+    //moved to VertexDiffuse;
+    void VulkanEntry::QuerryAvailableLayers() {  }
 
     void VulkanEntry::Update()
     {

@@ -4,10 +4,10 @@
 
 namespace vk
 {
-    class CVkCommandBuffer
+    class CommandBuffer
     {
     public:
-        CVkCommandBuffer();
+        CommandBuffer();
         void Destroy();
         void CreateCommandBuffer(const VkDevice& device, const VkCommandPool& commandPool, int count);
         void BeginCommandBufferRecord(VkCommandBufferUsageFlags flags, VkCommandBuffer buffer);

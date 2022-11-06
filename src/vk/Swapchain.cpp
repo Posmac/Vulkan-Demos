@@ -1,21 +1,21 @@
-#include "vkSwapchain.h"
+#include "Swapchain.h"
 
 namespace vk
 {
-    CVkSwapchain::CVkSwapchain()
+    Swapchain::Swapchain()
     {
 
     }
 
-    void CVkSwapchain::Init(const VkInstance& instance, const VkPhysicalDevice& physicalDevice,
-                        const QueuesInfo& info, const WindowParameters& params)
+    void Swapchain::Init(const VkInstance& instance, const VkPhysicalDevice& physicalDevice,
+                         const QueuesInfo& info, const WindowParameters& params)
     {
         CreateSurface(instance, physicalDevice, info, params);
         SelectPresentationMode(VK_PRESENT_MODE_MAILBOX_KHR, physicalDevice);
         GetPresentationSurfaceCapabilities(physicalDevice);
     }
 
-    void CVkSwapchain::PresentImage(const VkDevice& device, const VkQueue& graphicsQueue)
+    void Swapchain::PresentImage(const VkDevice& device, const VkQueue& graphicsQueue)
     {
         auto result = vkAcquireNextImageKHR(device, swapchain, 2000000000, 0, 0, &currentImageIndex);
         
@@ -37,7 +37,7 @@ namespace vk
         vkQueuePresentKHR(graphicsQueue, &presentInfo);
     }
 
-    void CVkSwapchain::Destroy(const VkDevice& device, const VkInstance& instance)
+    void Swapchain::Destroy(const VkDevice& device, const VkInstance& instance)
     {
         if(swapchain != VK_NULL_HANDLE)
         {
@@ -50,8 +50,8 @@ namespace vk
         }
     }
 
-    void CVkSwapchain::CreateSurface(const VkInstance& instance, const VkPhysicalDevice& physicalDevice,
-                        const QueuesInfo& info, const WindowParameters& params)
+    void Swapchain::CreateSurface(const VkInstance& instance, const VkPhysicalDevice& physicalDevice,
+                                  const QueuesInfo& info, const WindowParameters& params)
     {
         VkWin32SurfaceCreateInfoKHR surfaceInfo{};
         surfaceInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
@@ -77,7 +77,7 @@ namespace vk
         }
     }
 
-    void CVkSwapchain::SelectPresentationMode(const VkPresentModeKHR desiredPresentMode,const VkPhysicalDevice& physicalDevice)
+    void Swapchain::SelectPresentationMode(const VkPresentModeKHR desiredPresentMode, const VkPhysicalDevice& physicalDevice)
     {
         uint32_t presentModesCount = 0;
         vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModesCount, nullptr);
@@ -96,7 +96,7 @@ namespace vk
         presentMode = VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    void CVkSwapchain::GetPresentationSurfaceCapabilities(const VkPhysicalDevice& physicalDevice)
+    void Swapchain::GetPresentationSurfaceCapabilities(const VkPhysicalDevice& physicalDevice)
     {
         auto result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities);
         if(result != VK_SUCCESS)
@@ -105,8 +105,8 @@ namespace vk
         }
     }
 
-    void CVkSwapchain::CreateSwapchain(VkImageUsageFlags usageFlags, VkSurfaceTransformFlagBitsKHR surfaceTransform,
-            VkSurfaceFormatKHR desiredFormat, int width, int height, const VkDevice& device, const VkPhysicalDevice& physicalDevice)
+    void Swapchain::CreateSwapchain(VkImageUsageFlags usageFlags, VkSurfaceTransformFlagBitsKHR surfaceTransform,
+                                    VkSurfaceFormatKHR desiredFormat, int width, int height, const VkDevice& device, const VkPhysicalDevice& physicalDevice)
     {
         uint32_t imagesNumber = surfaceCapabilities.minImageCount + 1;
         imagesNumber = imagesNumber < surfaceCapabilities.maxImageCount ? imagesNumber : surfaceCapabilities.maxImageCount;

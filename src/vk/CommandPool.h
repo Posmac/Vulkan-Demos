@@ -4,10 +4,10 @@
 
 namespace vk
 {
-    class CVkCommandPool
+    class CommandPool
     {
     public:
-        CVkCommandPool();
+        CommandPool();
         void Destroy();
         void CreateCommandPool(const VkDevice &device, uint32_t graphicsQueue);
         void ResetCommandPool(const VkDevice &device, VkCommandPoolResetFlags resetFlags);

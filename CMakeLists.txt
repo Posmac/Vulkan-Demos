@@ -9,29 +9,33 @@ include_directories(src/Core)
 include_directories(src/vk)
 include_directories(src/Platform)
 include_directories(src/Common)
+include_directories(src/Examples)
 
 add_executable(VulkanBook
-        src/App.cpp
+        src/Application.cpp
         src/Core/Core.h
         src/Common/QueueInfo.h
         src/Platform/Win32Window.cpp
         src/Platform/Win32Window.h
-        src/vk/vkApp.cpp
-        src/vk/vkApp.h
-        src/vk/vkDebugMesenger.cpp
-        src/vk/vkDebugMesenger.h
-        src/vk/vkInstance.cpp
-        src/vk/vkInstance.h
-        src/vk/vkPhysicalDevice.cpp
-        src/vk/vkPhysicalDevice.h
-        src/vk/vkLogicalDevice.cpp
-        src/vk/vkLogicalDevice.h
-        src/vk/vkSwapchain.cpp
-        src/vk/vkSwapchain.h
-        src/vk/vkCommandPool.cpp
-        src/vk/vkCommandPool.h
-        src/vk/vkCommandBuffer.cpp
-        src/vk/vkCommandBuffer.h
+        src/vk/VulkanEntry.cpp
+        src/vk/VulkanEntry.h
+        src/vk/DebugMesenger.cpp
+        src/vk/DebugMesenger.h
+        src/vk/Instance.cpp
+        src/vk/Instance.h
+        src/vk/PhysicalDevice.cpp
+        src/vk/PhysicalDevice.h
+        src/vk/LogicalDevice.cpp
+        src/vk/LogicalDevice.h
+        src/vk/Swapchain.cpp
+        src/vk/Swapchain.h
+        src/vk/CommandPool.cpp
+        src/vk/CommandPool.h
+        src/vk/CommandBuffer.cpp
+        src/vk/CommandBuffer.h
+
+        src/Examples/VertexDiffuse.h
+        src/Examples/VertexDiffuse.cpp
 
         external/stb_image.h 
         external/tiny_obj_loader.h)

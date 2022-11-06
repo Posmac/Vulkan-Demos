@@ -1,18 +1,18 @@
-#include "vkCommandBuffer.h"
+#include "CommandBuffer.h"
 
 namespace vk
 {
-    CVkCommandBuffer::CVkCommandBuffer()
+    CommandBuffer::CommandBuffer()
     {
 
     }
 
-    void CVkCommandBuffer::Destroy()
+    void CommandBuffer::Destroy()
     {
 
     }
 
-    void CVkCommandBuffer::CreateCommandBuffer(const VkDevice& device, const VkCommandPool& commandPool, int count)
+    void CommandBuffer::CreateCommandBuffer(const VkDevice& device, const VkCommandPool& commandPool, int count)
     {
         VkCommandBufferAllocateInfo allocInfo {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -30,7 +30,7 @@ namespace vk
         }
     }
 
-    void CVkCommandBuffer::BeginCommandBufferRecord(VkCommandBufferUsageFlags flags, VkCommandBuffer buffer)
+    void CommandBuffer::BeginCommandBufferRecord(VkCommandBufferUsageFlags flags, VkCommandBuffer buffer)
     {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -45,7 +45,7 @@ namespace vk
         }
     }
 
-    void CVkCommandBuffer::EndCommandBufferRecord(VkCommandBuffer buffer)
+    void CommandBuffer::EndCommandBufferRecord(VkCommandBuffer buffer)
     {
         auto result = vkEndCommandBuffer(buffer);
         if(result != VK_SUCCESS)
@@ -54,7 +54,7 @@ namespace vk
         }
     }
 
-    void CVkCommandBuffer::ResetCommandBuffer(VkCommandBuffer buffer, VkCommandBufferResetFlags resetFlags)
+    void CommandBuffer::ResetCommandBuffer(VkCommandBuffer buffer, VkCommandBufferResetFlags resetFlags)
     {
         auto result = vkResetCommandBuffer(buffer, resetFlags);
         if(result != VK_SUCCESS)
@@ -63,7 +63,7 @@ namespace vk
         }
     }
 
-    void CVkCommandBuffer::CreateSemaphore(const VkDevice& device)
+    void CommandBuffer::CreateSemaphore(const VkDevice& device)
     {
         VkSemaphoreCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -77,7 +77,7 @@ namespace vk
         }
     }
 
-    void CVkCommandBuffer::CreateFence(VkDevice const &device, VkFenceCreateFlagBits flag)
+    void CommandBuffer::CreateFence(VkDevice const &device, VkFenceCreateFlagBits flag)
     {
         VkFenceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

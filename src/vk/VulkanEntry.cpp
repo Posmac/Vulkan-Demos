@@ -1,8 +1,8 @@
-#include "vkApp.h"
+#include "VulkanEntry.h"
 
 namespace vk
 {
-    VkApp::VkApp()
+    VulkanEntry::VulkanEntry()
     {
 #ifdef NDEBUG
     debugModeEnabled = false;
@@ -11,7 +11,7 @@ namespace vk
 #endif
     }
 
-    void VkApp::Destroy()
+    void VulkanEntry::Destroy()
     {
         swapchain.Destroy(device.GetDevice(), instance.GetInstance());
         device.Destroy();
@@ -19,7 +19,7 @@ namespace vk
         instance.Destroy();
     }
 
-    void VkApp::Run(int width, int height)
+    void VulkanEntry::Run(int width, int height)
     {
         this->width = width;
         this->height = height;
@@ -50,7 +50,7 @@ namespace vk
                                 width, height, device.GetDevice(), gpu.GetGPU());
     }
 
-    void VkApp::QuerryAvailableLayers()
+    void VulkanEntry::QuerryAvailableLayers()
     {
         if(!debugModeEnabled)
         {
@@ -68,12 +68,12 @@ namespace vk
         vkEnumerateInstanceLayerProperties(&availableLayersCount, availableLayers.data());
     }
 
-    void VkApp::Update()
+    void VulkanEntry::Update()
     {
         swapchain.PresentImage(device.GetDevice(), gpu.GetGraphicsQueue());
     }
 
-	bool VkApp::IsRunning()
+	bool VulkanEntry::IsRunning()
     {
         return true;
     }

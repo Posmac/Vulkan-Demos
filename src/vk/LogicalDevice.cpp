@@ -1,18 +1,18 @@
-#include "vkLogicalDevice.h"
+#include "LogicalDevice.h"
 
 namespace vk
 {
-    CVkLogicalDevice::CVkLogicalDevice()
+    LogicalDevice::LogicalDevice()
     {
 
     }
 
-    VkDevice CVkLogicalDevice::GetDevice() const
+    VkDevice LogicalDevice::GetDevice() const
     {
         return device;
     }
 
-    void CVkLogicalDevice::Destroy()
+    void LogicalDevice::Destroy()
     {
         if(device != VK_NULL_HANDLE)
         {
@@ -20,7 +20,7 @@ namespace vk
         }
     }
 
-    void CVkLogicalDevice::createLogicalDevice(const VkPhysicalDevice& physicalDevice, 
+    void LogicalDevice::createLogicalDevice(const VkPhysicalDevice& physicalDevice,
                                             std::vector<const char*> usedDeviceExtensions,
                                             std::vector<const char*> usedValidationLayers,
                                             bool computeQueueIndexEqualToGraphicsQueueIndex, const QueuesInfo& info,

@@ -4,19 +4,19 @@
 #include <thread>
 #include <array>
 
-#include "vkDebugMesenger.h"
-#include "vkInstance.h"
-#include "vkLogicalDevice.h"
-#include "vkPhysicalDevice.h"
-#include "vkSwapchain.h"
+#include "DebugMesenger.h"
+#include "Instance.h"
+#include "LogicalDevice.h"
+#include "PhysicalDevice.h"
+#include "Swapchain.h"
 #include "Win32Window.h"
 
 namespace vk
 {
-	class VkApp
+	class VulkanEntry
 	{
 	public:
-		VkApp();
+		VulkanEntry();
 		void Destroy();
 		void Run(int width, int height);
 		bool IsRunning();
@@ -29,11 +29,11 @@ namespace vk
 		std::vector<VkLayerProperties> availableLayers;
 
 		bool debugModeEnabled;
-		CVkDebugMessenger debugMessenger;
-		CVkInstance instance;
-		CVkPhysicalDevice gpu;
-		CVkLogicalDevice device;
-		CVkSwapchain swapchain;
+		DebugMessenger debugMessenger;
+		Instance instance;
+		PhysicalDevice gpu;
+		LogicalDevice device;
+		Swapchain swapchain;
 		Win32Window window;
 
 		//TODO: abstract in some structure later

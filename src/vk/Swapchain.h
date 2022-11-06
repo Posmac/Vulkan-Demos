@@ -8,10 +8,10 @@
 
 namespace vk
 {
-    class CVkSwapchain
+    class Swapchain
     {
     public:
-        CVkSwapchain();
+        Swapchain();
         void Destroy(const VkDevice& device, const VkInstance& instance);
         void Init(const VkInstance& instance, const VkPhysicalDevice& physicalDevice,
                         const QueuesInfo& info, const WindowParameters& params);

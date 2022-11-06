@@ -4,7 +4,7 @@
 
 namespace vk
 {
-    class CVkDebugMessenger
+    class DebugMessenger
     {
     private:
         	VkDebugUtilsMessengerEXT _debugMessenger;
@@ -14,7 +14,7 @@ namespace vk
                 VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
     public:
-        CVkDebugMessenger();
+        DebugMessenger();
         void CreateDebugMesenger(const VkInstance& instance, bool debugModeEnabled);
         void Destroy(const VkInstance&instance);
 

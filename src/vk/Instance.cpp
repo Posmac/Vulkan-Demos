@@ -1,13 +1,13 @@
-#include "vkInstance.h"
+#include "Instance.h"
 
 namespace vk
 {
-    CVkInstance::CVkInstance()
+    Instance::Instance()
     {
 
     }
 
-    void CVkInstance::Destroy()
+    void Instance::Destroy()
     {
         if(instance != VK_NULL_HANDLE)
         {
@@ -15,15 +15,15 @@ namespace vk
         }
     }
 
-    VkInstance CVkInstance::GetInstance() const 
+    VkInstance Instance::GetInstance() const
     {
         return instance;
     }
 
-    void CVkInstance::CreateInstance(const VkDebugUtilsMessengerCreateInfoEXT& debugMessengerInfo, bool isDebugModeEnabled,
-                                     const std::vector<const char*>& usedValidationLayers, 
-                                     const std::vector<VkLayerProperties>& availableLayers,
-                                     const std::vector<const char*>& usedInstanceExtensions)
+    void Instance::CreateInstance(const VkDebugUtilsMessengerCreateInfoEXT& debugMessengerInfo, bool isDebugModeEnabled,
+                                  const std::vector<const char*>& usedValidationLayers,
+                                  const std::vector<VkLayerProperties>& availableLayers,
+                                  const std::vector<const char*>& usedInstanceExtensions)
     {
         GetAvailableInstanceExtensions();
 
@@ -87,7 +87,7 @@ namespace vk
         }
     }
     
-    void CVkInstance::GetAvailableInstanceExtensions()
+    void Instance::GetAvailableInstanceExtensions()
     {
         availableInstanceExtensionsCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &availableInstanceExtensionsCount, nullptr);

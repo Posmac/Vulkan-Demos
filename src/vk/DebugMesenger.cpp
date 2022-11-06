@@ -1,10 +1,10 @@
-#include "vkDebugMesenger.h"
+#include "DebugMesenger.h"
 
 namespace vk
 {
-    CVkDebugMessenger::CVkDebugMessenger() { }
+    DebugMessenger::DebugMessenger() { }
 
-    void CVkDebugMessenger::Destroy(const VkInstance &instance)
+    void DebugMessenger::Destroy(const VkInstance &instance)
     {
         if(_debugMessenger != VK_NULL_HANDLE)
         {
@@ -12,7 +12,7 @@ namespace vk
         }
     }
 
-    VkDebugUtilsMessengerCreateInfoEXT CVkDebugMessenger::GetDebugUtilsMessengerInfo() const
+    VkDebugUtilsMessengerCreateInfoEXT DebugMessenger::GetDebugUtilsMessengerInfo() const
     {
         VkDebugUtilsMessengerCreateInfoEXT debugInfo{};
         debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -32,9 +32,9 @@ namespace vk
         return debugInfo;
     }
 
-    void CVkDebugMessenger::DestroyDebugUtilsMessengerEXT(VkInstance instance, 
-        VkDebugUtilsMessengerEXT debugMessenger, 
-        const VkAllocationCallbacks* pAllocator)
+    void DebugMessenger::DestroyDebugUtilsMessengerEXT(VkInstance instance,
+                                                       VkDebugUtilsMessengerEXT debugMessenger,
+                                                       const VkAllocationCallbacks* pAllocator)
     {
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) {
@@ -42,7 +42,7 @@ namespace vk
         }
     }
 
-    void CVkDebugMessenger::CreateDebugMesenger(const VkInstance& instance, bool debugModeEnabled)
+    void DebugMessenger::CreateDebugMesenger(const VkInstance& instance, bool debugModeEnabled)
     {
        if(!debugModeEnabled)
        {
@@ -58,8 +58,8 @@ namespace vk
        }
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL CVkDebugMessenger::DebugMesengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
-                VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+    VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessenger::DebugMesengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                                         VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 	{
 		if (messageSeverity >=
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)

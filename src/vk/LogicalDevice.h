@@ -5,10 +5,10 @@
 
 namespace vk
 {
-    class CVkLogicalDevice
+    class LogicalDevice
     {
     public:
-        CVkLogicalDevice();
+        LogicalDevice();
         void Destroy();
         VkDevice GetDevice() const;
         void createLogicalDevice(const VkPhysicalDevice& physicalDevice, 

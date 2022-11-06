@@ -1,40 +1,40 @@
-#include "vkPhysicalDevice.h"
+#include "PhysicalDevice.h"
 
 namespace vk
 {
-	CVkPhysicalDevice::CVkPhysicalDevice()
+	PhysicalDevice::PhysicalDevice()
 	{
 
 	}
 
 
 
-	VkPhysicalDevice CVkPhysicalDevice::GetGPU() const
+	VkPhysicalDevice PhysicalDevice::GetGPU() const
 	{
 		return physicalDevice;
 	}
 
-	bool CVkPhysicalDevice::IsQueuesIdentic() const
+	bool PhysicalDevice::IsQueuesIdentic() const
 	{
 		return computeQueueIndexEqualToGraphicsQueueIndex;
 	}
 
-	QueuesInfo CVkPhysicalDevice::GetQueuesInfo() const
+	QueuesInfo PhysicalDevice::GetQueuesInfo() const
 	{
 		return info;
 	}
 
-	VkQueue CVkPhysicalDevice::GetGraphicsQueue()
+	VkQueue PhysicalDevice::GetGraphicsQueue()
 	{
 		return graphicsQueue;
 	}
 
-	VkQueue CVkPhysicalDevice::GetComputeQueue()
+	VkQueue PhysicalDevice::GetComputeQueue()
 	{
 		return computeQueue;
 	}
 
-	void CVkPhysicalDevice::PickUpPhysicalDevice(const VkInstance& instance)
+	void PhysicalDevice::PickUpPhysicalDevice(const VkInstance& instance)
 	{
 		uint32_t availablePhysicalDevices = 0;
 		vkEnumeratePhysicalDevices(instance, &availablePhysicalDevices, nullptr);
@@ -59,7 +59,7 @@ namespace vk
 		physicalDevice = devices[0];
 	}
 
-	bool CVkPhysicalDevice::IsDeviceIsSuitable(VkPhysicalDevice device)
+	bool PhysicalDevice::IsDeviceIsSuitable(VkPhysicalDevice device)
 	{
 		VkPhysicalDeviceFeatures features;
 		VkPhysicalDeviceProperties props;

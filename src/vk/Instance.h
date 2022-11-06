@@ -4,10 +4,10 @@
 
 namespace vk
 {
-    class CVkInstance
+    class Instance
     {
     public:
-        CVkInstance();
+        Instance();
         void Destroy();
         void CreateInstance(const VkDebugUtilsMessengerCreateInfoEXT& debugMessengerInfo, bool isDebugModeEnabled,
                             const std::vector<const char*>& usedValidationLayers, 

@@ -5,10 +5,10 @@
 
 namespace vk
 {
-    class CVkPhysicalDevice
+    class PhysicalDevice
     {
     public:
-        CVkPhysicalDevice();
+        PhysicalDevice();
         void PickUpPhysicalDevice(const VkInstance& instance);
         VkPhysicalDevice GetGPU() const;
         bool IsQueuesIdentic() const;

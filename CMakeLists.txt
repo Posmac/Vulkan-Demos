@@ -10,6 +10,7 @@ include_directories(src/vk)
 include_directories(src/Platform)
 include_directories(src/Common)
 include_directories(src/Examples)
+include_directories(shaders)
 
 add_executable(VulkanBook
         src/Application.cpp
@@ -38,13 +39,11 @@ add_executable(VulkanBook
         src/Examples/VertexDiffuse.cpp
 
         external/stb_image.h 
-        external/tiny_obj_loader.h )
+        external/tiny_obj_loader.h  "src/Core/Log.h" "src/Core/Log.cpp")
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")
 set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib")
-
-include_directories(shaders)
 
 message(STATUS "Vulkan path is ${VULKAN_SDK_PATH}")
 message(STATUS "Vulkan include is ${Vulkan_INCLUDE_DIRS}")
@@ -59,5 +58,7 @@ target_link_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} vulkan-1)
 
 add_subdirectory(external/glm)
-
 target_link_libraries(${PROJECT_NAME} glm)
+
+add_subdirectory(submodules/spdlog)
+target_link_libraries(${PROJECT_NAME} spdlog)

@@ -9,13 +9,13 @@ namespace vk
     {
     public:
         PhysicalDevice();
-        void PickUpPhysicalDevice(const VkInstance& instance);
+        VkPhysicalDevice PickUpPhysicalDevice(const VkInstance& instance);
         VkPhysicalDevice GetGPU() const;
         bool IsQueuesIdentic() const;
         QueuesInfo GetQueuesInfo() const;
         VkQueue GetComputeQueue();
         VkQueue GetGraphicsQueue();
-
+        QueuesInfo AcquireQueues(VkDevice device);
     private:
         bool IsDeviceIsSuitable(VkPhysicalDevice device);
     private:

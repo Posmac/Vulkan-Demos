@@ -9,8 +9,8 @@ namespace vk
     public:
         CommandPool();
         void Destroy();
-        void CreateCommandPool(const VkDevice &device, uint32_t graphicsQueue);
-        void ResetCommandPool(const VkDevice &device, VkCommandPoolResetFlags resetFlags);
+        VkCommandPool CreateCommandPool(VkDevice device, uint32_t graphicsQueue);
+        void ResetCommandPool(VkDevice device, VkCommandPoolResetFlags resetFlags);
     private:
         VkCommandPool commandPool;
     };

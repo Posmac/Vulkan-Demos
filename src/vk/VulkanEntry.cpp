@@ -13,10 +13,6 @@ namespace vk
 
     void VulkanEntry::Destroy()
     {
-        swapchain.Destroy(device.GetDevice(), instance.GetInstance());
-        device.Destroy();
-        debugMessenger.Destroy(instance.GetInstance());
-        instance.Destroy();
     }
 
     void VulkanEntry::Run(int width, int height)
@@ -38,16 +34,10 @@ namespace vk
         gpu.PickUpPhysicalDevice(instance.GetInstance());
 
         //creating logical device
-        device.createLogicalDevice(gpu.GetGPU(), usedDeviceExtensions, usedValidationLayers, 
-                                gpu.IsQueuesIdentic(), gpu.GetQueuesInfo(), debugModeEnabled, 
-                                gpu.GetGraphicsQueue(), gpu.GetComputeQueue());
+        device.CreateLogicalDevice(gpu.GetGPU(), usedDeviceExtensions, usedValidationLayers, 
+                                gpu.IsQueuesIdentic(), gpu.GetQueuesInfo(), debugModeEnabled);
+
         
-        //window system creation
-        window.CreateWindowsWindow(width, height);
-        swapchain.Init(instance.GetInstance(), gpu.GetGPU(), gpu.GetQueuesInfo(), window.GetWindowParams());
-        swapchain.CreateSwapchain(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR, 
-                                {VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR}, 
-                                width, height, device.GetDevice(), gpu.GetGPU());
     }
 
     //moved to VertexDiffuse;
@@ -55,7 +45,6 @@ namespace vk
 
     void VulkanEntry::Update()
     {
-        swapchain.PresentImage(device.GetDevice(), gpu.GetGraphicsQueue());
     }
 
 	bool VulkanEntry::IsRunning()

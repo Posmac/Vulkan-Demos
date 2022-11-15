@@ -7,8 +7,6 @@ namespace vk
 
 	}
 
-
-
 	VkPhysicalDevice PhysicalDevice::GetGPU() const
 	{
 		return physicalDevice;
@@ -24,6 +22,24 @@ namespace vk
 		return info;
 	}
 
+	QueuesInfo PhysicalDevice::AcquireQueues(VkDevice device)
+	{
+		VkQueue graphicsQueue;
+		vkGetDeviceQueue(device, info.graphicsFamily.value(), 0, &graphicsQueue);
+		info.graphicsQueue = graphicsQueue;
+		if (!computeQueueIndexEqualToGraphicsQueueIndex)
+		{
+			VkQueue computeQueue;
+			vkGetDeviceQueue(device, info.computeFamily.value(), 0, &computeQueue);
+			info.computeQueue = computeQueue;
+		}
+
+		LOG_INFO("Queue families used indexes:");
+		LOG_INFO("Graphics family queue index " + std::to_string(info.graphicsFamily.value()));
+		LOG_INFO("Compute family queue index " + std::to_string(info.computeFamily.value()));
+		return info;
+	}
+
 	VkQueue PhysicalDevice::GetGraphicsQueue()
 	{
 		return graphicsQueue;
@@ -34,7 +50,7 @@ namespace vk
 		return computeQueue;
 	}
 
-	void PhysicalDevice::PickUpPhysicalDevice(const VkInstance& instance)
+	VkPhysicalDevice PhysicalDevice::PickUpPhysicalDevice(const VkInstance& instance)
 	{
 		uint32_t availablePhysicalDevices = 0;
 		vkEnumeratePhysicalDevices(instance, &availablePhysicalDevices, nullptr);
@@ -52,11 +68,13 @@ namespace vk
 			if (IsDeviceIsSuitable(device))
 			{
 				physicalDevice = device;
-				return;
+				return physicalDevice;
 			}
 		}
 		LOG_INFO("Failed to find suitable physical devices, picked first one");
 		physicalDevice = devices[0];
+
+		return physicalDevice;
 	}
 
 	bool PhysicalDevice::IsDeviceIsSuitable(VkPhysicalDevice device)

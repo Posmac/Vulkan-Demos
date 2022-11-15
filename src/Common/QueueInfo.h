@@ -8,6 +8,8 @@ struct QueuesInfo
 {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> computeFamily;
+    VkQueue graphicsQueue;
+    VkQueue computeQueue;
 
     bool isComplete()
     {

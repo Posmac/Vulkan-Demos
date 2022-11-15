@@ -2,7 +2,8 @@
 
 #include "Core.h"
 
-#include <Windows.h>
+#include "VertexDiffuse.h"
+#include "WindowParams.h"
 #include <vulkan/vulkan_win32.h>
 #include <strsafe.h>
 
@@ -17,18 +18,13 @@ namespace vk
         USER_MESSAGE_MOUSE_WHEEL
     };
 
-    struct WindowParameters
-    {
-        HINSTANCE hInstance;
-        HWND hWnd;
-    };
-
     class Win32Window
     {
     public:
         Win32Window();
         WindowParameters GetWindowParams() const;
         void CreateWindowsWindow(int width, int height);
+        void Render(VertexDiffuseExample& sample);
     private:
         static LRESULT CALLBACK WindowProcedure( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     private:

@@ -49,12 +49,14 @@ namespace vk
            LOG_INFO("Debug mode disabled, no debug object will be created");
            return;
        }
+
        auto debugInfo = GetDebugUtilsMessengerInfo();
        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
        auto result = func(instance, &debugInfo, nullptr, &_debugMessenger);
+
        if (result != VK_SUCCESS)
        {
-           LOG_INFO("failed to create debug utils messenger");
+           ERROR_LOG("failed to create debug utils messenger");
        }
     }
 
@@ -64,7 +66,7 @@ namespace vk
 		if (messageSeverity >=
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 		{
-			LOG_INFO(" VALIDATION LAYER" + std::string(pCallbackData->pMessage));
+			LOG_INFO("VALIDATION LAYER: " + std::string(pCallbackData->pMessage));
 		}
 		return VK_FALSE;
 	}

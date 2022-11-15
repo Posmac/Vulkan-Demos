@@ -11,12 +11,12 @@ namespace vk
         LogicalDevice();
         void Destroy();
         VkDevice GetDevice() const;
-        void createLogicalDevice(const VkPhysicalDevice& physicalDevice, 
-                                            std::vector<const char*> usedDeviceExtensions,
-                                            std::vector<const char*> usedValidationLayers,
-                                            bool computeQueueIndexEqualToGraphicsQueueIndex, 
-                                            const QueuesInfo& info, bool debugModeEnabled, 
-                                            VkQueue graphicsQueue, VkQueue computeQueue);
+        VkDevice CreateLogicalDevice(VkPhysicalDevice physicalDevice,
+            std::vector<const char*> usedDeviceExtensions,
+            std::vector<const char*> usedValidationLayers,
+            bool computeQueueIndexEqualToGraphicsQueueIndex,
+            QueuesInfo info,
+            bool debugModeEnabled);
     private:
         VkDevice device;
 

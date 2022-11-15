@@ -10,6 +10,7 @@ include_directories(src/vk)
 include_directories(src/Platform)
 include_directories(src/Common)
 include_directories(src/Examples)
+include_directories(src/Structs)
 include_directories(shaders)
 
 add_executable(VulkanBook
@@ -18,6 +19,7 @@ add_executable(VulkanBook
         src/Common/QueueInfo.h
         src/Platform/Win32Window.cpp
         src/Platform/Win32Window.h
+        src/Platform/WindowParams.h
         src/vk/VulkanEntry.cpp
         src/vk/VulkanEntry.h
         src/vk/DebugMesenger.cpp
@@ -35,11 +37,22 @@ add_executable(VulkanBook
         src/vk/CommandBuffer.cpp
         src/vk/CommandBuffer.h
 
+        src/Core/Log.h 
+        src/Core/Log.cpp
+        src/Structs/Image.h 
+        src/Structs/Buffer.h
+        src/Structs/Semaphore.h
+        src/Structs/Descriptors.h 
+        src/Structs/RenderPass.h 
+        src/Structs/Pipeline.h 
+        src/Common/MeshLoader.h
+        src/Common/MeshLoader.cpp
+
         src/Examples/VertexDiffuse.h
         src/Examples/VertexDiffuse.cpp
 
         external/stb_image.h 
-        external/tiny_obj_loader.h  "src/Core/Log.h" "src/Core/Log.cpp")
+        external/tiny_obj_loader.h)
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")

@@ -12,7 +12,7 @@ namespace vk
 
     }
 
-    void CommandBuffer::CreateCommandBuffer(const VkDevice& device, const VkCommandPool& commandPool, int count)
+    std::vector<VkCommandBuffer>& CommandBuffer::CreateCommandBuffers(VkDevice device, VkCommandPool commandPool, int count)
     {
         VkCommandBufferAllocateInfo allocInfo {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -23,11 +23,9 @@ namespace vk
 
         commandBuffers.resize(count);
 
-        auto result = vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data());
-        if(result != VK_SUCCESS)
-        {
-            LOG_INFO("Failed to allocate command buffers");
-        }
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()));
+
+        return commandBuffers;
     }
 
     void CommandBuffer::BeginCommandBufferRecord(VkCommandBufferUsageFlags flags, VkCommandBuffer buffer)
@@ -63,31 +61,24 @@ namespace vk
         }
     }
 
-    void CommandBuffer::CreateSemaphore(const VkDevice& device)
+    void CommandBuffer::CreateVkSemaphore(VkDevice device, VkSemaphore& semaphore)
     {
         VkSemaphoreCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0; // reserved for future use
 
-        auto result = vkCreateSemaphore(device, &createInfo, nullptr, &semaphore);
-        if(result != VK_SUCCESS)
-        {
-            LOG_INFO("Failed to create semaphore");
-        }
+        VK_CHECK_RESULT(vkCreateSemaphore(device, &createInfo, nullptr, &semaphore));
     }
 
-    void CommandBuffer::CreateFence(VkDevice const &device, VkFenceCreateFlagBits flag)
+    void CommandBuffer::CreateFence(VkDevice device, VkFenceCreateFlagBits flag, 
+        VkFence& fence)
     {
         VkFenceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = flag;
 
-        auto result = vkCreateFence(device, &createInfo, nullptr, &fence);
-        if(result != VK_SUCCESS)
-        {
-            LOG_INFO("Failed to create fence");
-        }
+        VK_CHECK_RESULT(vkCreateFence(device, &createInfo, nullptr, &fence));
     }
 }

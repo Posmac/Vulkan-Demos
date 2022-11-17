@@ -82,7 +82,7 @@ namespace vk
             }
         }
 
-        WARN_LOG("Desired present mode is not supported, selecting FIFO mode");
+        //WARN_LOG("Desired present mode is not supported, selecting FIFO mode");
         for (auto& currentPresentMode : presentModes)
         {
             if (currentPresentMode == VK_PRESENT_MODE_FIFO_KHR)
@@ -315,10 +315,11 @@ namespace vk
         }
 
         VkExtent2D desiredSize = imageSize;
-        if (!ChooseSizeOfSwapchainImages(surfaceCapabilities, desiredSize, imageSize))
+        if (!ChooseSizeOfSwapchainImages(surfaceCapabilities, imageSize, desiredSize))
         {
             return false;
         }
+        imageSize = desiredSize;
 
         VkImageUsageFlags desiredImageUsage;
         if (!SelectDesiredUsageScenariosOfSwapChainImages(surfaceCapabilities, imageUsage, desiredImageUsage))

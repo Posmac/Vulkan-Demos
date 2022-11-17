@@ -2,7 +2,6 @@
 
 namespace vk
 {
-
     void GetDebugUtilsMessengerInfo(VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo)
     {
         debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -51,11 +50,12 @@ namespace vk
             ERROR_LOG("Failed to create debug utils messenger");
             return false;
         }
+        return true;
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL DebugMesengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageTypes, 
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
+        VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData)
     {
         if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)

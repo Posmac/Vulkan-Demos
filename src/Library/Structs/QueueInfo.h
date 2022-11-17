@@ -28,4 +28,10 @@ struct QueueInfo
     std::vector<float> priorities;
 };
 
+struct QueueParameters
+{
+    VkQueue handle;
+    uint32_t familyIndex;
+};
+
 #endif

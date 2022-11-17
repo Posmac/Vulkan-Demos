@@ -48,7 +48,7 @@ namespace vk
         }
     }
 
-    void Win32Window::Render()
+    void Win32Window::Render(Sample &sample)
     {
         ShowWindow(params.hWnd, SW_SHOWNORMAL);
         UpdateWindow(params.hWnd);
@@ -67,6 +67,13 @@ namespace vk
                 }
                 TranslateMessage(&message);
                 DispatchMessage(&message);
+            }
+            else
+            {
+                if (sample.IsReady())
+                {
+                    sample.Draw();
+                }
             }
         }
     }

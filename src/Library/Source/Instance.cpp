@@ -61,36 +61,38 @@ namespace vk
             }
         }
 
-        VkApplicationInfo appInfo =
-        {
-            VK_STRUCTURE_TYPE_APPLICATION_INFO,
-            nullptr,
-            appName,
-            VK_MAKE_VERSION(1, 0, 0),
-            "Vulkan Framework",
-            VK_MAKE_VERSION(1, 0, 0,),
-            VK_MAKE_VERSION(1, 0, 0,)
-        };
+        VkApplicationInfo appInfo{};
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        appInfo.pNext = nullptr;
+        appInfo.pApplicationName = "VulkanFramework";
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.pEngineName = "VulkanEngine";
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion = VK_API_VERSION_1_0;
 
-        VkDebugUtilsMessengerCreateInfoEXT messenger;
+        VkInstanceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.pApplicationInfo = &appInfo;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(desiredExtensions.size());
+        createInfo.ppEnabledExtensionNames = desiredExtensions.data();
+
+        VkDebugUtilsMessengerCreateInfoEXT messenger{};
+        GetDebugUtilsMessengerInfo(messenger);
         if (isDebugModeEnabled)
         {
-            GetDebugUtilsMessengerInfo(messenger);
+            //createInfo.pNext = &messenger;
+            createInfo.enabledLayerCount = static_cast<uint32_t>(desiredValidationLayers.size());
+            createInfo.ppEnabledLayerNames = desiredValidationLayers.data();
+        }
+        else
+        {
+            createInfo.pNext = nullptr;
+            createInfo.enabledLayerCount = 0;
+            createInfo.ppEnabledLayerNames = nullptr;
         }
 
-        VkInstanceCreateInfo instanceInfo =
-        {
-            VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-            isDebugModeEnabled ? &messenger : nullptr,
-            0,
-            &appInfo,
-            isDebugModeEnabled ? static_cast<uint32_t>(desiredValidationLayers.size()) : 0,
-            isDebugModeEnabled ? desiredValidationLayers.data() : nullptr,
-            static_cast<uint32_t>(desiredExtensions.size()),
-            desiredExtensions.data()
-        };
-
-        VK_CHECK_RESULT(vkCreateInstance(&instanceInfo, nullptr, &instance));
+        VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &instance));
         if (instance == VK_NULL_HANDLE)
         {
             CRITICAL_LOG("Failed to create instance");

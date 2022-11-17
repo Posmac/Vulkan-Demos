@@ -5,51 +5,65 @@ set(CMAKE_CXX_STANDARD 17)
 set(PROJECT_NAME VulkanBook)
 
 include_directories(src)
-include_directories(src/Core)
-include_directories(src/vk)
-include_directories(src/Platform)
-include_directories(src/Common)
-include_directories(src/Examples)
-include_directories(src/Structs)
-include_directories(shaders)
 
 add_executable(VulkanBook
         src/Application.cpp
-        src/Core/Core.h
-        src/Common/QueueInfo.h
-        src/Platform/Win32Window.cpp
-        src/Platform/Win32Window.h
-        src/Platform/WindowParams.h
-        src/vk/VulkanEntry.cpp
-        src/vk/VulkanEntry.h
-        src/vk/DebugMesenger.cpp
-        src/vk/DebugMesenger.h
-        src/vk/Instance.cpp
-        src/vk/Instance.h
-        src/vk/PhysicalDevice.cpp
-        src/vk/PhysicalDevice.h
-        src/vk/LogicalDevice.cpp
-        src/vk/LogicalDevice.h
-        src/vk/Swapchain.cpp
-        src/vk/Swapchain.h
-        src/vk/CommandPool.cpp
-        src/vk/CommandPool.h
-        src/vk/CommandBuffer.cpp
-        src/vk/CommandBuffer.h
 
-        src/Core/Log.h 
-        src/Core/Log.cpp
-        src/Structs/Image.h 
-        src/Structs/Buffer.h
-        src/Structs/Semaphore.h
-        src/Structs/Descriptors.h 
-        src/Structs/RenderPass.h 
-        src/Structs/Pipeline.h 
-        src/Common/MeshLoader.h
-        src/Common/MeshLoader.cpp
+        src/Library/Common/Log.cpp
+        src/Library/Common/Log.h
 
-        src/Examples/VertexDiffuse.h
-        src/Examples/VertexDiffuse.cpp
+        src/Library/Common/MeshLoader.cpp
+        src/Library/Common/MeshLoader.h
+
+        src/Library/Core/Core.h
+
+        src/Library/Platform/Win32Window.cpp
+        src/Library/Platform/Win32Window.h
+        src/Library/Platform/WindowParams.h
+
+        src/Library/Source/CommandBuffer.cpp
+        src/Library/Source/CommandBuffer.h
+
+        src/Library/Source/DebugMesenger.cpp
+        src/Library/Source/DebugMesenger.h
+
+        src/Library/Source/Instance.cpp
+        src/Library/Source/Instance.h
+
+        src/Library/Source/LogicalDevice.cpp
+        src/Library/Source/LogicalDevice.h
+
+        src/Library/Source/PhysicalDevice.cpp
+        src/Library/Source/PhysicalDevice.h
+
+        src/Library/Source/Swapchain.cpp
+        src/Library/Source/Swapchain.h
+
+        src/Library/Source/Resources.h
+        src/Library/Source/Resources.cpp
+
+        src/Library/Source/DescriptorSets.h
+        src/Library/Source/DescriptorSets.cpp
+        
+        src/Library/Source/RenderPass.h
+        src/Library/Source/RenderPass.cpp
+        
+        src/Library/Source/Pipeline.h
+        src/Library/Source/Pipeline.cpp
+
+        src/Library/Common/Tools.h 
+        src/Library/Common/Tools.cpp
+
+        src/Library/Source/Drawing.cpp
+        src/Library/Source/Drawing.h
+
+        src/Library/Structs/Buffer.h
+        src/Library/Structs/Descriptors.h
+        src/Library/Structs/Image.h
+        src/Library/Structs/Pipeline.h
+        src/Library/Structs/QueueInfo.h
+        src/Library/Structs/Renderpass.h
+        src/Library/Structs/Semaphore.h
 
         external/stb_image.h 
         external/tiny_obj_loader.h)

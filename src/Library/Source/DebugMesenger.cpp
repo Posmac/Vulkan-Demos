@@ -7,7 +7,7 @@ namespace vk
         debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         debugCreateInfo.pNext = nullptr;
         debugCreateInfo.flags = 0;//everytime 0, reserved for later use
-        debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+        debugCreateInfo.messageSeverity = 
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 
@@ -58,10 +58,7 @@ namespace vk
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData)
     {
-        if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-        {
-            WARN_LOG("VALIDATION LAYER: " + std::string(pCallbackData->pMessage) + '\n');
-        }
+        WARN_LOG("VALIDATION LAYER: " + std::string(pCallbackData->pMessage) + '\n');
         return VK_FALSE;
     }
 }

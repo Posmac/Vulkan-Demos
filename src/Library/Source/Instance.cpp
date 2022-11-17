@@ -81,7 +81,7 @@ namespace vk
         GetDebugUtilsMessengerInfo(messenger);
         if (isDebugModeEnabled)
         {
-            //createInfo.pNext = &messenger;
+            createInfo.pNext = &messenger;
             createInfo.enabledLayerCount = static_cast<uint32_t>(desiredValidationLayers.size());
             createInfo.ppEnabledLayerNames = desiredValidationLayers.data();
         }

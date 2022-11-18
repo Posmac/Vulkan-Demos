@@ -48,7 +48,7 @@ namespace vk
     void SpecifyPipelineMultisamlpeState(VkSampleCountFlagBits sampleCount,
         bool perSampleShadingEnable,
         float minSampleShading,
-        VkSampleMask sampleMask,
+        VkSampleMask *sampleMask,
         bool alphaToCoverageEnable,
         bool alphaToOneEnable,
         VkPipelineMultisampleStateCreateInfo& stateInfo);

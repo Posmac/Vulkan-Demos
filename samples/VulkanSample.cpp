@@ -1,5 +1,5 @@
 #include "VulkanSample.h"
-
+#include <algorithm>
 namespace vk
 {
     bool Sample::InitVulkan(WindowParameters& windowParams,

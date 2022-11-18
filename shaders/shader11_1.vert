@@ -17,6 +17,5 @@ void main()
 	gl_Position = ubo.ProjectionMatrix * ubo.ViewMatrix * ubo.ModelMatrix * vec4(inPos, 1.0);
 	vec3 normal = mat3(ubo.ModelMatrix * ubo.ViewMatrix) * inNormal;
 
-	//vertColor = max(0.0, dot(normal, vec3(0.58, 0.58, 0.58))) + 0.1;
-	vertColor = 1.0f;
+	vertColor = max(0.0, dot(normal, vec3(0.58, 0.58, 0.58))) + 0.1;
 }

@@ -57,9 +57,14 @@ add_executable(VulkanBook
 
         src/Library/Source/Drawing.cpp
         src/Library/Source/Drawing.h
-
         
         samples/VulkanSampleBase.h
+        
+        samples/VulkanSample.h
+        samples/VulkanSample.cpp
+
+        
+        
 
         src/Library/Structs/Buffer.h
         src/Library/Structs/Descriptors.h
@@ -70,7 +75,7 @@ add_executable(VulkanBook
         src/Library/Structs/Semaphore.h
 
         external/stb_image.h 
-        external/tiny_obj_loader.h "samples/VulkanSample.h" "samples/VulkanSample.cpp")
+        external/tiny_obj_loader.h)
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")

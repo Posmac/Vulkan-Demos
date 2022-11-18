@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vulkan/vulkan.h"
+#include "glm/glm.hpp"
 
 namespace vk
 {
@@ -32,5 +33,12 @@ namespace vk
         VkAccessFlags dstFlags;
         uint32_t srcQueueFamilyIndex;
         uint32_t dstQueueFamilyIndex;
+    };
+
+    struct UniformBufferObject
+    {
+        glm::mat4 ModelMatrix;
+        glm::mat4 ViewMatrix;
+        glm::mat4 ProjectionMatrix;
     };
 }

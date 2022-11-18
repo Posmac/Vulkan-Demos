@@ -11,7 +11,7 @@ namespace vk
         std::vector<VkAttachmentReference> inputAttachments;
         std::vector<VkAttachmentReference> colorAttachments;
         std::vector<VkAttachmentReference> resolveAttachments;
-        VkAttachmentReference depthStencilAttachment;
+        VkAttachmentReference *depthStencilAttachment;
         std::vector<uint32_t> preserveAttachments;
     };
 

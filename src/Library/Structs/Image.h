@@ -34,7 +34,7 @@ namespace vk
 
     struct SwapchainParameters
     {
-        VkSwapchainKHR swapchain;
+        VkSwapchainKHR handle;
         VkFormat format;
         VkExtent2D size;
         std::vector<VkImage> images;

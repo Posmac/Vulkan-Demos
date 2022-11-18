@@ -43,7 +43,6 @@ namespace vk
         SwapchainParameters swapchain;
         VkCommandPool commandPool;
         std::vector<VkImage> depthImages;
-        std::vector<VkImageView> depthImageViews;
         std::vector<VkDeviceMemory> depthImageMemory;
         std::vector<FrameResources> frameResources;
         uint32_t framesCount = 3;
@@ -66,6 +65,7 @@ namespace vk
         VkDeviceMemory stagingBufferMemory;
         bool updateUniformBuffer;
         VkBuffer uniformBuffer;
-        VkDeviceMemory UniformBufferMemory;
+        VkDeviceMemory uniformBufferMemory;
+        UniformBufferObject uniformObject;
     };
 }

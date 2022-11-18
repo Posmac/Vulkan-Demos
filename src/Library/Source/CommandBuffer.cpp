@@ -127,9 +127,9 @@ namespace vk
     }
 
     void SubmitCommandBuffersToQueue(VkQueue queue, 
-        std::vector<WaitSemaphoreInfo> waitInfo, 
-        std::vector<VkCommandBuffer> commandBuffers, 
-        std::vector<VkSemaphore> signalSemaphores, 
+        const std::vector<WaitSemaphoreInfo>& waitInfo, 
+        const std::vector<VkCommandBuffer>& commandBuffers,
+        const std::vector<VkSemaphore>& signalSemaphores,
         VkFence fence)
     {
         std::vector<VkSemaphore> waitSemaphores;
@@ -145,16 +145,17 @@ namespace vk
         {
             VK_STRUCTURE_TYPE_SUBMIT_INFO,
             nullptr,
-            static_cast<uint32_t>(waitSemaphores.size()),
-            waitSemaphores.data(),
-            waitSemaphoreStages.data(),
+            waitSemaphores.size() > 0 ? static_cast<uint32_t>(waitSemaphores.size()) : 0,
+            waitSemaphores.size() > 0 ? waitSemaphores.data() : nullptr,
+            waitSemaphoreStages.size() > 0 ? waitSemaphoreStages.data() : 0,
             static_cast<uint32_t>(commandBuffers.size()),
             commandBuffers.data(),
             static_cast<uint32_t>(signalSemaphores.size()),
             signalSemaphores.data()
         };
+        std::vector<VkSubmitInfo> infos = { submitInfo };
 
-        VK_CHECK_RESULT(vkQueueSubmit(queue, 1, & submitInfo, fence))
+        VK_CHECK_RESULT(vkQueueSubmit(queue, 1, infos.data(), fence))
     }
 
     void SyncronizeTwoCommandBuffers(VkQueue firstQueue, 

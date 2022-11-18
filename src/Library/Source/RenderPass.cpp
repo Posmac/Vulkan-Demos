@@ -18,7 +18,7 @@ namespace vk
                     static_cast<uint32_t>(subpassParam.colorAttachments.size()),
                     subpassParam.colorAttachments.data(),
                     subpassParam.resolveAttachments.data(),
-                    &subpassParam.depthStencilAttachment,
+                    subpassParam.depthStencilAttachment,
                     static_cast<uint32_t>(subpassParam.preserveAttachments.size()),
                     subpassParam.preserveAttachments.data()
                 }
@@ -131,7 +131,7 @@ namespace vk
                 }
             },
             {},
-            depth_stencil_attachment,
+            &depth_stencil_attachment,
             {},
         };
 
@@ -147,7 +147,7 @@ namespace vk
                     }
                 },
                 {},
-                depth_stencil_attachment,
+                &depth_stencil_attachment,
                 {},
             },
 
@@ -251,7 +251,7 @@ namespace vk
                     }
                 },
                 {},
-                depthStencilAttachment,
+                &depthStencilAttachment,
                 {}
             },
         };

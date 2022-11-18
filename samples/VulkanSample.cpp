@@ -60,8 +60,8 @@ namespace vk
 
             physicalDevice = gpu;
             GetDeviceQueue(device, graphicsQueue.familyIndex, 0, graphicsQueue.handle);
-            GetDeviceQueue(device, computeQueue.familyIndex, 0, graphicsQueue.handle);
-            GetDeviceQueue(device, presentQueue.familyIndex, 0, graphicsQueue.handle);
+            GetDeviceQueue(device, computeQueue.familyIndex, 0, computeQueue.handle);
+            GetDeviceQueue(device, presentQueue.familyIndex, 0, presentQueue.handle);
             break;
         }
 
@@ -82,7 +82,6 @@ namespace vk
             VkSemaphore readyToPresentSemaphore;
             VkFence drawingFinishedFence;
             VkImageView depthAttachment;
-            VkFramebuffer framebuffer;
 
             AllocateCommandBuffers(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY,
                 1, commandBuffer);
@@ -97,18 +96,17 @@ namespace vk
                     std::move(readyToPresentSemaphore),
                     std::move(drawingFinishedFence),
                     std::move(depthAttachment),
-                    std::move(framebuffer)
+                    {}
                 }
             );
         }
 
         swapchain.format = VK_FORMAT_R8G8B8A8_UNORM;
         swapchain.size = { 800, 600 };
-        swapchain.swapchain = VK_NULL_HANDLE;
+        swapchain.handle = VK_NULL_HANDLE;
         swapchain.images.clear();
         swapchain.imageViews.clear();
         depthImages.clear();
-        depthImageViews.clear();
         depthImageMemory.clear();
 
         if (!CreateSwapchain(useDepth, swapChainImageUsage, depthImageUsage))
@@ -127,10 +125,10 @@ namespace vk
 
         isReady = false;
 
-        VkSwapchainKHR oldswapchain = swapchain.swapchain;
+        VkSwapchainKHR oldswapchain = swapchain.handle;
 
         if (!CreateSwapchainWithRGBA8FormatAndMailBoxPresentMode(device, physicalDevice, presentationSurface,
-            swapChainImageUsage, swapchain.size, swapchain.format, oldswapchain, swapchain.swapchain, swapchain.images))
+            swapChainImageUsage, swapchain.size, swapchain.format, oldswapchain, swapchain.handle, swapchain.images))
         {
             return false;
         }
@@ -143,15 +141,13 @@ namespace vk
         }
 
         depthImages.resize(framesCount);
-        depthImageViews.resize(framesCount);
         depthImageMemory.resize(framesCount);
 
         for (int i = 0; i < framesCount; i++)
         {
             Create2DImageAndView(device, physicalDevice, depthFormat, swapchain.size, 1, 1,
-                VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT,
-                depthImages[i], depthImageMemory[i], depthImageViews[i]);
-            frameResources[i].depthAttachment = depthImageViews[i];
+                VK_SAMPLE_COUNT_1_BIT, depthImageUsage, VK_IMAGE_ASPECT_DEPTH_BIT,
+                depthImages[i], depthImageMemory[i], frameResources[i].depthAttachment);
         }
 
         isReady = true;
@@ -164,13 +160,13 @@ namespace vk
         std::vector<const char*> deviceExtensions)
     {
         if (!InitVulkan(windowParams, validationLayer, instanceExtensions, deviceExtensions, nullptr,
-            false, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT))
+            false, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT))
         {
             return false;
         }
 
         //load mesh data to memory
-        model = MeshLoader::LoadMesh("models/teapot.obj", true, false);
+        MeshLoader::LoadMesh("models/teapot.obj", true, false, false, true, model);
         VkDeviceSize vertexBufferSize = sizeof(model.data[0]) * model.data.size();
         CreateBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             vertexBuffer);
@@ -183,25 +179,31 @@ namespace vk
             graphicsQueue.handle, frameResources.front().commandBuffer, {});
 
         //load matrix data throught staging buffer into uniform buffer
-        VkDeviceSize uniformBufferSize = 32 * sizeof(float);
+        VkDeviceSize uniformBufferSize = sizeof(UniformBufferObject);
         CreateBuffer(device, uniformBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer);
         AllocateAndBindMemoryObjectToBuffer(device, physicalDevice, stagingBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
             stagingBufferMemory);
 
         CreateUniformBuffer(device, physicalDevice, uniformBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uniformBuffer, UniformBufferMemory);
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uniformBuffer, uniformBufferMemory);
 
+        updateUniformBuffer = true;
         glm::mat4 modelMatrix = glm::mat4(1.0f);
-        glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0, 0, -1), glm::vec3(0), glm::vec3(0, 1, 0));
-        glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f), 
+        glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f), 
+            glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
             static_cast<float>(swapchain.size.width) / static_cast<float>(swapchain.size.height),
             0.01f, 100.0f);
-        glm::mat4 modelView = viewMatrix * modelMatrix;
+        projectionMatrix[1][1] *= -1;
 
-        std::vector<glm::mat4> matrices = { modelView, projectionMatrix };
+          uniformObject = {
+            modelMatrix,
+            viewMatrix,
+            projectionMatrix
+        };
 
         MapUpdateAndUnmapHostVisibleMemory(device, stagingBufferMemory, 0, uniformBufferSize,
-            matrices.data(), true, nullptr);
+            &uniformObject, true, nullptr);
 
         //descriptor set with uniform buffer
         VkDescriptorSetLayoutBinding descriptorSetLayoutBind =
@@ -284,7 +286,7 @@ namespace vk
                 {},
                 {colorAttachment},
                 {},
-                depthAttachment,
+                &depthAttachment,
                 {},
             },
         };
@@ -462,6 +464,36 @@ namespace vk
         {
             BeginCommandBufferRecordingOperation(commandBuffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr);
 
+            if (updateUniformBuffer)
+            {
+                BufferTransition preTransition =
+                {
+                    uniformBuffer,
+                    VK_ACCESS_UNIFORM_READ_BIT,
+                    VK_ACCESS_TRANSFER_WRITE_BIT,
+                    VK_QUEUE_FAMILY_IGNORED,
+                    VK_QUEUE_FAMILY_IGNORED,
+                };
+                SetBufferMemoryBarrier(commandBuffer, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT, { preTransition });
+                VkBufferCopy region = {
+                    0, 0, sizeof(uniformObject)
+                };
+                std::vector<VkBufferCopy> regions = { region };
+                CopyDataBetweenBuffers(commandBuffer, stagingBuffer, uniformBuffer, regions);
+
+                BufferTransition postTransition =
+                {
+                    uniformBuffer,
+                    VK_ACCESS_TRANSFER_WRITE_BIT,
+                    VK_ACCESS_UNIFORM_READ_BIT,
+                    VK_QUEUE_FAMILY_IGNORED,
+                    VK_QUEUE_FAMILY_IGNORED,
+                };
+                SetBufferMemoryBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, { postTransition });
+            }
+
             if (presentQueue.familyIndex != graphicsQueue.familyIndex)
             {
                 ImageTransition transitionBeforeDrawing =
@@ -532,7 +564,7 @@ namespace vk
 
         std::vector<WaitSemaphoreInfo> waitInfos;
         IncreasePerformanceThroughtIncreasingTheNumberOfSeparatelyRenderedFrames(device, graphicsQueue.handle,
-            presentQueue.handle, swapchain.swapchain, swapchain.size, swapchain.imageViews,
+            presentQueue.handle, swapchain.handle, swapchain.size, swapchain.imageViews,
             renderPass, waitInfos, recordCommandBuffer, frameResources);
 
         return true;

@@ -50,9 +50,9 @@ namespace vk
         const std::vector<VkFence>& fences);
 
     void SubmitCommandBuffersToQueue(VkQueue queue,
-        std::vector<WaitSemaphoreInfo> waitInfo,
-        std::vector<VkCommandBuffer> commandBuffers,
-        std::vector<VkSemaphore> signalSemaphores,
+        const std::vector<WaitSemaphoreInfo>& waitInfo,
+        const std::vector<VkCommandBuffer>& commandBuffers,
+        const std::vector<VkSemaphore>& signalSemaphores,
         VkFence fence);
 
     void SyncronizeTwoCommandBuffers(VkQueue firstQueue,

@@ -286,10 +286,9 @@ namespace vk
         }
 
         std::vector<WaitSemaphoreInfo> waitInfo = waitInfos;
-        waitInfo.push_back({
-            imageAcquiredSemaphore,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-            });
+        WaitSemaphoreInfo newInfo = { imageAcquiredSemaphore,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        waitInfo.push_back(newInfo);
 
         SubmitCommandBuffersToQueue(graphicsQueue, waitInfo, { commandBuffer },
             { readyToPresentSemaphore }, finishedDrawingFence);
@@ -323,8 +322,7 @@ namespace vk
         PrepareSingleFrameOfAnimation(device, graphicsQueue, presentQueue, swapchain, swapchainSize,
             swapchainImages, currentFrame.depthAttachment, waitInfos, currentFrame.imageAcquiredSemaphore,
             currentFrame.readyToPresentSemaphore, currentFrame.drawingFinishedFence, recordCommandBuffer, 
-            currentFrame.commandBuffer,
-            renderPass, currentFrame.framebuffer);
+            currentFrame.commandBuffer, renderPass, currentFrame.framebuffer);
 
         frameIndex = (frameIndex + 1) % frameResources.size();
     }

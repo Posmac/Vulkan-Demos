@@ -14,30 +14,46 @@
 #include "Library/Source/Drawing.h"
 #include "Library/Source/DescriptorSets.h"
 
+
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 namespace vk
 {
-	class SampleBase
-	{
-	public:
-		inline SampleBase() : isReady(false) {};
-		inline virtual ~SampleBase() {};
+    class SampleBase
+    {
+    public:
+        inline SampleBase() : isReady(false) {};
+        inline virtual ~SampleBase() {};
 
-		virtual bool Initialize(WindowParameters& windowParams, 
-			std::vector<const char*> validationLayer,
-			std::vector<const char*> instanceExtensions,
-			std::vector<const char*> deviceExtensions) = 0;
+        virtual bool Initialize(WindowParameters& windowParams,
+            std::vector<const char*> validationLayer,
+            std::vector<const char*> instanceExtensions,
+            std::vector<const char*> deviceExtensions) = 0;
 
-		virtual bool Draw() = 0;
-		virtual bool Resize() = 0;
-		virtual void Destroy() = 0;
+        virtual bool Draw() = 0;
+        virtual bool Resize() = 0;
+        virtual void Destroy() = 0;
 
-		inline virtual bool IsReady() { return isReady; };
-	protected:
-		bool isReady;
-	};
+        inline virtual bool IsReady() { return isReady; };
+    protected:
+        VkDebugUtilsMessengerEXT messenger;
+        VkInstance instance;
+        VkPhysicalDevice physicalDevice;
+        VkDevice device;
+        VkSurfaceKHR presentationSurface;
+        QueueParameters graphicsQueue;
+        QueueParameters presentQueue;
+        QueueParameters computeQueue;
+        SwapchainParameters swapchain;
+        VkCommandPool commandPool;
+        std::vector<VkImage> depthImages;
+        std::vector<VkDeviceMemory> depthImageMemory;
+        std::vector<FrameResources> frameResources;
+        uint32_t framesCount = 3;
+        VkFormat depthFormat = VK_FORMAT_D16_UNORM;
+        bool isReady;
+    };
 
 
 }

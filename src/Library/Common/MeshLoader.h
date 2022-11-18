@@ -25,7 +25,7 @@ namespace vk
     class MeshLoader
     {
     public:
-        static Mesh LoadMesh(std::string& path, bool loadTexCoords, bool loadNormals)
+        static Mesh LoadMesh(const std::string& path, bool loadTexCoords, bool loadNormals)
         {
             tinyobj::attrib_t attrib;
             std::vector<tinyobj::shape_t> shapes;

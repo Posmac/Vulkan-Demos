@@ -14,6 +14,9 @@
 #include "Library/Source/Drawing.h"
 #include "Library/Source/DescriptorSets.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 namespace vk
 {
 	class SampleBase

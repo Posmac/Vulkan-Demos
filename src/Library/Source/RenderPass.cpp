@@ -277,7 +277,7 @@ namespace vk
         VkRenderPass renderPass, 
         VkFramebuffer framebuffer, 
         VkRect2D renderArea, 
-        std::vector<VkClearValue>& clearValues, 
+        const std::vector<VkClearValue>& clearValues, 
         VkSubpassContents subpassContents)
     {
         VkRenderPassBeginInfo beginInfo =

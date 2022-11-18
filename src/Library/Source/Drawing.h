@@ -35,7 +35,7 @@ namespace vk
 
     void BindVertexBuffers(VkCommandBuffer commandBuffer,
         uint32_t firstBind,
-        std::vector<VertexBufferParams>& bufferParams);
+        const std::vector<VertexBufferParams>& bufferParams);
 
     void BindIndexBuffer(VkCommandBuffer commandBuffer,
         VkBuffer buffer,

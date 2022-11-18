@@ -138,13 +138,13 @@ namespace vk
         VkDeviceMemory& imageMemory);
 
     void CreateDescriptorSetLayout(VkDevice device,
-        std::vector<VkDescriptorSetLayoutBinding>& bindings,
+        const std::vector<VkDescriptorSetLayoutBinding>& bindings,
         VkDescriptorSetLayout& descriptorSetLayout);
 
     void CreateDescriptorPool(VkDevice device,
         bool freeIndividualSets,
         uint32_t maxSetsCount,
-        std::vector<VkDescriptorPoolSize>& types,
+        const std::vector<VkDescriptorPoolSize>& types,
         VkDescriptorPool& descriptorPool);
 
     void AllocateDescriptorSets(VkDevice device,

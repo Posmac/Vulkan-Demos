@@ -174,7 +174,7 @@ namespace vk
     void SpecifyPipelineBlendState(bool logicOpEnable, 
         VkLogicOp logicOp, 
         std::vector<VkPipelineColorBlendAttachmentState>& attachmentBlendStates, 
-        std::array<float, 4>& blendConstants, 
+        const std::array<float, 4>& blendConstants, 
         VkPipelineColorBlendStateCreateInfo& stateInfo)
     {
         stateInfo = 

@@ -32,7 +32,7 @@ namespace vk
 
     void BindVertexBuffers(VkCommandBuffer commandBuffer,
         uint32_t firstBind,
-        std::vector<VertexBufferParams>& bufferParams)
+        const std::vector<VertexBufferParams>& bufferParams)
     {
         std::vector<VkBuffer> buffers;
         std::vector<VkDeviceSize> offsets;

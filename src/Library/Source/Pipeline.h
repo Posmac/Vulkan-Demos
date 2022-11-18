@@ -67,15 +67,15 @@ namespace vk
     void SpecifyPipelineBlendState(bool logicOpEnable,
         VkLogicOp logicOp,
         std::vector<VkPipelineColorBlendAttachmentState>& attachmentBlendStates,
-        std::array<float, 4>& blendConstants,
+        const std::array<float, 4>& blendConstants,
         VkPipelineColorBlendStateCreateInfo& stateInfo);
 
     void SpecifyPipelineDynamicStates(std::vector<VkDynamicState>& dynamicStates,
         VkPipelineDynamicStateCreateInfo& stateInfo);
 
     void CreatePipelineLayout(VkDevice device,
-        std::vector<VkDescriptorSetLayout>& descriptorSetLayouts,
-        std::vector<VkPushConstantRange>& pushConstantsRange,
+        const std::vector<VkDescriptorSetLayout>& descriptorSetLayouts,
+        const std::vector<VkPushConstantRange>& pushConstantsRange,
         VkPipelineLayout& pipelineLayout);
 
     void SpecifyGraphicsPipelineParameters(VkPipelineCreateFlags additionalOptions,

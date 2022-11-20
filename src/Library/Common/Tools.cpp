@@ -1,4 +1,5 @@
 #include "Tools.h"
+#include "Library/Core/Core.h"
 
 namespace vk
 {
@@ -9,7 +10,7 @@ namespace vk
 
         std::ifstream file(filename, std::ios::binary);
         if (file.fail()) {
-            std::cout << "Could not open '" << filename << "' file." << std::endl;
+            ERROR_LOG( "Could not open '" + filename + "' file.");
             return false;
         }
 
@@ -20,7 +21,7 @@ namespace vk
         end = file.tellg();
 
         if ((end - begin) == 0) {
-            std::cout << "The '" << filename << "' file is empty." << std::endl;
+            ERROR_LOG("The file '" + filename + "' is empty.");
             return false;
         }
         contents.resize(static_cast<size_t>(end - begin));

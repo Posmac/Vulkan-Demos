@@ -8,7 +8,8 @@ include_directories(src)
 include_directories(samples)
 
 add_executable(VulkanBook
-        src/Application.cpp
+        #samples/vertexDiffuseLighting/main.cpp
+        samples/pixelDiffuseLighting/main.cpp
 
         src/Library/Common/Log.cpp
         src/Library/Common/Log.h
@@ -60,11 +61,11 @@ add_executable(VulkanBook
         
         samples/VulkanSampleBase.h
         
-        samples/VulkanSample.h
-        samples/VulkanSample.cpp
+        samples/vertexDiffuseLighting/VertexDiffuseSample.h
+        samples/vertexDiffuseLighting/VertexDiffuseSample.cpp
 
-        
-        
+        samples/pixelDiffuseLighting/PixelDiffuseSample.h
+        samples/pixelDiffuseLighting/PixelDiffuseSample.cpp
 
         src/Library/Structs/Buffer.h
         src/Library/Structs/Descriptors.h
@@ -75,7 +76,7 @@ add_executable(VulkanBook
         src/Library/Structs/Semaphore.h
 
         external/stb_image.h 
-        external/tiny_obj_loader.h)
+        external/tiny_obj_loader.h "samples/VulkanSampleBase.cpp")
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")
@@ -98,3 +99,7 @@ target_link_libraries(${PROJECT_NAME} glm)
 
 add_subdirectory(submodules/spdlog)
 target_link_libraries(${PROJECT_NAME} spdlog)
+
+add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${PROJECT_SOURCE_DIR}/shaders/ ${PROJECT_BINARY_DIR}/shaders/)

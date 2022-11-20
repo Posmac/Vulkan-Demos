@@ -40,7 +40,7 @@ namespace vk
         }
 
         params.hWnd = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, "Vulkan", WS_OVERLAPPEDWINDOW,
-            0, 0, width, height, NULL, NULL, params.hInstance, NULL);
+            250, 150, width, height, NULL, NULL, params.hInstance, NULL);
 
         if (params.hWnd == nullptr)
         {
@@ -48,7 +48,7 @@ namespace vk
         }
     }
 
-    void Win32Window::Render(Sample &sample)
+    void Win32Window::Render(VulkanSample& sample)
     {
         ShowWindow(params.hWnd, SW_SHOWNORMAL);
         UpdateWindow(params.hWnd);

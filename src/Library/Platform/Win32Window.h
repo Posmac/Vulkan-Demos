@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Library/Core/Core.h"
-#include "VulkanSample.h"
+#include "VulkanSampleBase.h"
 #include "WindowParams.h"
 #include <strsafe.h>
 
@@ -22,7 +22,7 @@ namespace vk
         Win32Window();
         WindowParameters GetWindowParams() const;
         void CreateWindowsWindow(int width, int height);
-        void Render(Sample& sample);
+        void Render(VulkanSample& sample);
     private:
         static LRESULT CALLBACK WindowProcedure( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     private:

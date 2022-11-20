@@ -14,29 +14,47 @@
 #include "Library/Source/Drawing.h"
 #include "Library/Source/DescriptorSets.h"
 
-
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 namespace vk
 {
-    class SampleBase
+    class VulkanInterface
     {
     public:
-        inline SampleBase() : isReady(false) {};
-        inline virtual ~SampleBase() {};
-
+        VulkanInterface();
+        virtual ~VulkanInterface();
         virtual bool Initialize(WindowParameters& windowParams,
             std::vector<const char*> validationLayer,
             std::vector<const char*> instanceExtensions,
             std::vector<const char*> deviceExtensions) = 0;
-
         virtual bool Draw() = 0;
         virtual bool Resize() = 0;
         virtual void Destroy() = 0;
+        virtual bool IsReady() = 0;
+    };
 
-        inline virtual bool IsReady() { return isReady; };
+    class VulkanSample : public VulkanInterface
+    {
+    public:
+        virtual bool InitVulkan(WindowParameters& windowParams,
+            std::vector<const char*> validationLayer,
+            std::vector<const char*> instanceExtensions,
+            std::vector<const char*> deviceExtensions,
+            VkPhysicalDeviceFeatures* deviceFeatures = nullptr,
+            bool useDepth = true,
+            VkImageUsageFlags swapChainImageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            VkImageUsageFlags depthImageUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+        virtual bool CreateSwapchain(bool useDepth = true,
+            VkImageUsageFlags swapChainImageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            VkImageUsageFlags depthImageUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+        virtual bool IsReady() override;
+        virtual void Destroy() override;
+
     protected:
+        bool isReady;
         VkDebugUtilsMessengerEXT messenger;
         VkInstance instance;
         VkPhysicalDevice physicalDevice;
@@ -52,8 +70,5 @@ namespace vk
         std::vector<FrameResources> frameResources;
         uint32_t framesCount = 3;
         VkFormat depthFormat = VK_FORMAT_D16_UNORM;
-        bool isReady;
     };
-
-
 }

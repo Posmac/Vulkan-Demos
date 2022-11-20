@@ -1,7 +1,7 @@
 #include <vector>
 
 #include "Library/Common/Log.h"
-#include "VulkanSample.h"
+#include "PixelDiffuseSample.h"
 #include "Library/Platform/Win32Window.h"
 #include "Library/Platform/WindowParams.h"
 
@@ -29,7 +29,7 @@ int main()
     vk::Win32Window window;
     window.CreateWindowsWindow(800, 600);
 
-    vk::Sample sample;
+    vk::PixelDiffuseSample sample;
     sample.Initialize(window.GetWindowParams(), usedValidationLayers, usedInstanceExtensions, usedDeviceExtensions);
 
     window.Render(sample);

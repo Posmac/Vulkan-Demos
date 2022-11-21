@@ -13,9 +13,11 @@
 #include "Library/Source/Pipeline.h"
 #include "Library/Source/Drawing.h"
 #include "Library/Source/DescriptorSets.h"
+#include "Library/Common/TextureLoader.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
 
 namespace vk
 {

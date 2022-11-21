@@ -8,8 +8,9 @@ include_directories(src)
 include_directories(samples)
 
 add_executable(VulkanBook
-        #samples/vertexDiffuseLighting/main.cpp
-        samples/pixelDiffuseLighting/main.cpp
+        #samples/VertexDiffuseLighting/main.cpp
+        #samples/PixelDiffuseLighting/main.cpp
+        samples/BumpMapping/main.cpp
 
         src/Library/Common/Log.cpp
         src/Library/Common/Log.h
@@ -60,12 +61,16 @@ add_executable(VulkanBook
         src/Library/Source/Drawing.h
         
         samples/VulkanSampleBase.h
+        samples/VulkanSampleBase.cpp
         
-        samples/vertexDiffuseLighting/VertexDiffuseSample.h
-        samples/vertexDiffuseLighting/VertexDiffuseSample.cpp
+        samples/VertexDiffuseLighting/VertexDiffuseSample.h
+        samples/VertexDiffuseLighting/VertexDiffuseSample.cpp
 
-        samples/pixelDiffuseLighting/PixelDiffuseSample.h
-        samples/pixelDiffuseLighting/PixelDiffuseSample.cpp
+        samples/PixelDiffuseLighting/PixelDiffuseSample.h
+        samples/PixelDiffuseLighting/PixelDiffuseSample.cpp
+
+        samples/BumpMapping/BumpMappingSample.h
+        samples/BumpMapping/BumpMappingSample.cpp
 
         src/Library/Structs/Buffer.h
         src/Library/Structs/Descriptors.h
@@ -74,9 +79,12 @@ add_executable(VulkanBook
         src/Library/Structs/QueueInfo.h
         src/Library/Structs/Renderpass.h
         src/Library/Structs/Semaphore.h
+        src/Library/Common/TextureLoader.h 
+        src/Library/Common/TextureLoader.cpp
 
         external/stb_image.h 
-        external/tiny_obj_loader.h "samples/VulkanSampleBase.cpp")
+        external/tiny_obj_loader.h
+        external/stbi_image.cpp)
 
 set(VULKAN_SDK_PATH  D:/VulkanSDK/1.3.216.0)
 set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")

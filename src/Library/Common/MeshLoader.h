@@ -6,6 +6,7 @@
 
 #include "Library/Core/Core.h"
 #include "../../external/tiny_obj_loader.h"
+#include "glm/glm.hpp"
 
 namespace vk
 {
@@ -39,7 +40,7 @@ namespace vk
             std::string                      error;
             std::string warn;
 
-            bool result = tinyobj::LoadObj(&attribs, &shapes, &materials, &warn , &error, filename);
+            bool result = tinyobj::LoadObj(&attribs, &shapes, &materials, &warn, &error, filename);
             if (!result) {
                 std::cout << "Could not open the '" << filename << "' file.";
                 if (0 < error.size()) {
@@ -137,7 +138,7 @@ namespace vk
             }
 
             if (generate_tangent_space_vectors) {
-                //GenerateTangentSpaceVectors(mesh);
+                GenerateTangentSpaceVectors(mesh);
             }
 
             if (unify) {
@@ -158,6 +159,78 @@ namespace vk
             }
 
             return true;
+        }
+    private:
+        static void CalculateTangentAndBitangent(float const* normal_data,
+            const glm::vec3& face_tangent,
+            const glm::vec3& face_bitangent,
+            float* tangent_data,
+            float* bitangent_data)
+        {
+            glm::vec3 normal = { normal_data[0], normal_data[1], normal_data[2] };
+            glm::vec3 tangent = glm::normalize(face_tangent - normal * glm::dot(normal, face_tangent));
+
+            float handedness = (glm::dot(glm::cross(normal, tangent), face_bitangent) < 0.0f) ? -1.0f : 1.0f;
+
+            glm::vec3 bitangent = handedness * glm::cross(normal, tangent);
+
+            tangent_data[0] = tangent[0];
+            tangent_data[1] = tangent[1];
+            tangent_data[2] = tangent[2];
+
+            bitangent_data[0] = bitangent[0];
+            bitangent_data[1] = bitangent[1];
+            bitangent_data[2] = bitangent[2];
+        }
+
+        static void GenerateTangentSpaceVectors(Mesh& mesh)
+        {
+            size_t const normal_offset = 3;
+            size_t const texcoord_offset = 6;
+            size_t const tangent_offset = 8;
+            size_t const bitangent_offset = 11;
+            size_t const stride = bitangent_offset + 3;
+
+            for (auto& part : mesh.meshes) {
+                for (size_t i = 0; i < mesh.data.size(); i += stride * 3) {
+                    size_t i1 = i;
+                    size_t i2 = i1 + stride;
+                    size_t i3 = i2 + stride;
+                    glm::vec3 v1 = { mesh.data[i1], mesh.data[i1 + 1], mesh.data[i1 + 2] };
+                    glm::vec3 v2 = { mesh.data[i2], mesh.data[i2 + 1], mesh.data[i2 + 2] };
+                    glm::vec3 v3 = { mesh.data[i3], mesh.data[i3 + 1], mesh.data[i3 + 2] };
+
+                    std::array<float, 2> const w1 = { mesh.data[i1 + texcoord_offset], mesh.data[i1 + texcoord_offset + 1] };
+                    std::array<float, 2> const w2 = { mesh.data[i2 + texcoord_offset], mesh.data[i2 + texcoord_offset + 1] };
+                    std::array<float, 2> const w3 = { mesh.data[i3 + texcoord_offset], mesh.data[i3 + texcoord_offset + 1] };
+
+                    float x1 = v2[0] - v1[0];
+                    float x2 = v3[0] - v1[0];
+                    float y1 = v2[1] - v1[1];
+                    float y2 = v3[1] - v1[1];
+                    float z1 = v2[2] - v1[2];
+                    float z2 = v3[2] - v1[2];
+
+                    float s1 = w2[0] - w1[0];
+                    float s2 = w3[0] - w1[0];
+                    float t1 = w2[1] - w1[1];
+                    float t2 = w3[1] - w1[1];
+
+                    float r = 1.0f / (s1 * t2 - s2 * t1);
+                    glm::vec3 face_tangent = { (t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r };
+                    glm::vec3 face_bitangent = { (s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r };
+
+                    CalculateTangentAndBitangent(&mesh.data[i1 + normal_offset],
+                        face_tangent, face_bitangent, &mesh.data[i1 + tangent_offset],
+                        &mesh.data[i1 + bitangent_offset]);
+                    CalculateTangentAndBitangent(&mesh.data[i2 + normal_offset],
+                        face_tangent, face_bitangent,
+                        &mesh.data[i2 + tangent_offset], &mesh.data[i2 + bitangent_offset]);
+                    CalculateTangentAndBitangent(&mesh.data[i3 + normal_offset],
+                        face_tangent, face_bitangent,
+                        &mesh.data[i3 + tangent_offset], &mesh.data[i3 + bitangent_offset]);
+                }
+            }
         }
     };
 }

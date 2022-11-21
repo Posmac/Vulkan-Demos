@@ -77,7 +77,7 @@ namespace vk
             return false;
         }
 
-        CreateImage(device, type, format, size, mipmaps, layers, VK_SAMPLE_COUNT_1_BIT, aspect, cubeMap, image);
+        CreateImage(device, type, format, size, mipmaps, layers, VK_SAMPLE_COUNT_1_BIT, usage, cubeMap, image);
         AllocateAndBindMemoryObjectToImage(device, gpu, image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, imageMemory);
         CreateImageView(device, image, viewType, format, aspect, imageView);
 

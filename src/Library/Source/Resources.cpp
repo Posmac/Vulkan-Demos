@@ -460,7 +460,7 @@ namespace vk
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
         CreateBuffer(device, dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer);
-        AllocateAndBindMemoryObjectToBuffer(device, gpu, stagingBuffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, stagingBufferMemory);
+        AllocateAndBindMemoryObjectToBuffer(device, gpu, stagingBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, stagingBufferMemory);
 
         MapUpdateAndUnmapHostVisibleMemory(device, stagingBufferMemory, 0, dataSize, data, true, nullptr);
 

@@ -95,7 +95,6 @@ namespace vk
             }
             else
             {
-                features = {};
                 features.geometryShader = VK_TRUE;
             }
 
